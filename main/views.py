@@ -8,7 +8,14 @@ def index(request):
     return render(request, 'main/index.html', context)
 
 def login_view(request):
-    pass
+    context = {
+
+    }
+    return render(request, 'main/login.html', context)
+
+def register(request):
+    context = {}
+    return render(request, 'main/register.html', context)
 
 def register_guest(request):
     pass
