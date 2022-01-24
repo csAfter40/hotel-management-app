@@ -1,9 +1,6 @@
-from pyexpat import model
-from django.db import models
-from sqlalchemy import null
 
-from main.models import User
-from frontdesk.models import RoomType
+from django.db import models
+from django_countries.fields import CountryField
 
 # Create your models here.
 class Owner(models.Model):
@@ -17,7 +14,7 @@ class Owner(models.Model):
         ('P', 'passport'),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey('main.User', on_delete=models.CASCADE)
     first_name = models.CharField(max_length=32)
     last_name = models.CharField(max_length=32)
     gender = models.CharField(max_length=1, choices=gender_choices)
@@ -27,11 +24,15 @@ class Owner(models.Model):
     # Can install phone number field app https://github.com/stefanfoulis/django-phonenumber-field
     phone = models.CharField(max_length=15)
 
+    def __str__(self):
+        return self.first_name, self.last_name
+
 class Hotel(models.Model):
     owner = models.ManyToManyField(Owner)
     name = models.CharField(max_length=128)
     #Can install django countries app https://github.com/SmileyChris/django-countries
-    country = models.CharField(max_length=32)
+    country = CountryField()
+    # country = models.CharField(max_length=32)
     state = models.CharField(max_length=32, null=True, blank=True)
     city = models.CharField(max_length=32)
     address_line_1 = models.CharField(max_length=64)
@@ -39,9 +40,15 @@ class Hotel(models.Model):
     zipcode = models.CharField(max_length=16)
     # GPS coordinates?
 
+    def __str__(self):
+        return self.name
+
 class Floor(models.Model):
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
     floor_name = models.CharField(max_length=32)
+
+    def __str__(self):
+        return self.floor_name
 
 class Room(models.Model):
 
@@ -56,12 +63,13 @@ class Room(models.Model):
     ]
 
     floor = models.ForeignKey(Floor, null=True, on_delete=models.SET_NULL)
-    room_type = models.ForeignKey(RoomType, null=True, on_delete=models.SET_NULL)
+    room_type = models.ForeignKey('frontdesk.RoomType', null=True, on_delete=models.SET_NULL)
     room_name = models.CharField(max_length=16)
     vacansy = models.CharField(max_length=1, choices=vacancy_choices)
     cleaning_status = models.CharField(max_length=1, choices=cleaning_status_choices)
     
-
+    def __str__(self):
+        return self.room_name
 
 class Employee(models.Model):
     employee_type_choices = [
@@ -85,21 +93,27 @@ class Employee(models.Model):
         ('P', 'passport'),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey('main.User', on_delete=models.CASCADE)
+    employee_type = models.CharField(max_length=2, choices=employee_type_choices)
     first_name = models.CharField(max_length=32)
     last_name = models.CharField(max_length=32)
     gender = models.CharField(max_length=1, choices=gender_choices)
     date_of_birth = models.DateField(null=True, blank=True)
     #Can install django countries app https://github.com/SmileyChris/django-countries
-    nationality = models.CharField(max_length=64)
+    nationality = CountryField()
     # Can install phone number field app https://github.com/stefanfoulis/django-phonenumber-field
     phone = models.CharField(max_length=15)
 
+    def __str__(self):
+        return self.employee_type, self.first_name, self.last_name
 
 class RoomCleaning(models.Model):
     employee = models.ForeignKey(Employee, null=True, on_delete=models.SET_NULL)
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
     time = models.DateTimeField(null=True, default=None)
+
+    def __str__(self):
+        return f"{self.room} -> {self.employee}"
 
 class RoomRate(models.Model):
 
@@ -108,8 +122,11 @@ class RoomRate(models.Model):
         ('EUR', 'EUR'),
     ]
 
-    room_type = models.ForeignKey(RoomType, on_delete=models.CASCADE)
+    room_type = models.ForeignKey('frontdesk.RoomType', on_delete=models.CASCADE)
     date = models.DateField()
     # Study on currency
     currency = models.CharField(max_length=3, choices=currency_choices)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return self.amount, self.currency
