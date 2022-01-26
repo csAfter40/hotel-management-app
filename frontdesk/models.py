@@ -1,5 +1,7 @@
 from django.db import models
 from django_countries.fields import CountryField
+from phonenumber_field.modelfields import PhoneNumberField
+from djmoney.models.fields import MoneyField
 
 
 class HotelLanguages(models.Model):
@@ -39,10 +41,10 @@ class Guest(models.Model):
     date_of_birth = models.DateField(null=True, blank=True)
     id_type = models.CharField(max_length=16, choices=id_type_choices)
     id_number = models.CharField(max_length=32)
-    #Can install django countries app https://github.com/SmileyChris/django-countries
+    #django countries app https://github.com/SmileyChris/django-countries
     nationality = CountryField()
-    # Can install phone number field app https://github.com/stefanfoulis/django-phonenumber-field
-    phone = models.CharField(max_length=15)
+    # Phone number field app https://github.com/stefanfoulis/django-phonenumber-field
+    phone_number = PhoneNumberField()
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
@@ -54,8 +56,6 @@ class RoomType(models.Model):
 
     def __str__(self):
         return self.title
-
-
 
 class Reservation(models.Model):
     status_choices = [
@@ -109,14 +109,16 @@ class Folio(models.Model):
 
 class Expense(models.Model):
 
-    currency_choices = [
-        ('USD', 'USD'),
-        ('EUR', 'EUR'),
-    ]
+    # currency_choices = [
+    #     ('USD', 'USD'),
+    #     ('EUR', 'EUR'),
+    # ]
 
     title = models.CharField(max_length=128)
-    currency = models.CharField(max_length=3, choices=currency_choices)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    # currency = models.CharField(max_length=3, choices=currency_choices)
+    # amount = models.DecimalField(max_digits=10, decimal_places=2)
+    # Django money app installed
+    amount = MoneyField(max_digits=14, decimal_places=2)
     folio = models.ForeignKey(Folio, related_name='expenses', on_delete=models.CASCADE)
 
     def __str__(self):

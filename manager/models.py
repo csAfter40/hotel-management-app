@@ -1,6 +1,8 @@
 
 from django.db import models
 from django_countries.fields import CountryField
+from phonenumber_field.modelfields import PhoneNumberField
+from djmoney.models.fields import MoneyField
 
 # Create your models here.
 class Owner(models.Model):
@@ -19,10 +21,10 @@ class Owner(models.Model):
     last_name = models.CharField(max_length=32)
     gender = models.CharField(max_length=1, choices=gender_choices)
     date_of_birth = models.DateField(null=True, blank=True)
-    #Can install django countries app https://github.com/SmileyChris/django-countries
-    nationality = models.CharField(max_length=64)
-    # Can install phone number field app https://github.com/stefanfoulis/django-phonenumber-field
-    phone = models.CharField(max_length=15)
+    # Django countries app https://github.com/SmileyChris/django-countries
+    nationality = CountryField()
+    # Phone number field app https://github.com/stefanfoulis/django-phonenumber-field
+    phone_number = PhoneNumberField()
 
     def __str__(self):
         return self.first_name, self.last_name
@@ -30,14 +32,14 @@ class Owner(models.Model):
 class Hotel(models.Model):
     owner = models.ManyToManyField(Owner)
     name = models.CharField(max_length=128)
-    #Can install django countries app https://github.com/SmileyChris/django-countries
+    # Django countries app https://github.com/SmileyChris/django-countries
     country = CountryField()
-    # country = models.CharField(max_length=32)
     state = models.CharField(max_length=32, null=True, blank=True)
     city = models.CharField(max_length=32)
     address_line_1 = models.CharField(max_length=64)
     address_line_2 = models.CharField(max_length=64, null=True, blank=True)
     zipcode = models.CharField(max_length=16)
+    phone_number = PhoneNumberField()
     # GPS coordinates?
 
     def __str__(self):
@@ -99,10 +101,10 @@ class Employee(models.Model):
     last_name = models.CharField(max_length=32)
     gender = models.CharField(max_length=1, choices=gender_choices)
     date_of_birth = models.DateField(null=True, blank=True)
-    #Can install django countries app https://github.com/SmileyChris/django-countries
+    # Django countries app https://github.com/SmileyChris/django-countries
     nationality = CountryField()
-    # Can install phone number field app https://github.com/stefanfoulis/django-phonenumber-field
-    phone = models.CharField(max_length=15)
+    # Phone number field app https://github.com/stefanfoulis/django-phonenumber-field
+    phone_number = PhoneNumberField()
 
     def __str__(self):
         return self.employee_type, self.first_name, self.last_name
@@ -117,16 +119,18 @@ class RoomCleaning(models.Model):
 
 class RoomRate(models.Model):
 
-    currency_choices = [
-        ('USD', 'USD'),
-        ('EUR', 'EUR'),
-    ]
+    # currency_choices = [
+    #     ('USD', 'USD'),
+    #     ('EUR', 'EUR'),
+    # ]
 
     room_type = models.ForeignKey('frontdesk.RoomType', on_delete=models.CASCADE)
     date = models.DateField()
     # Study on currency
-    currency = models.CharField(max_length=3, choices=currency_choices)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    # currency = models.CharField(max_length=3, choices=currency_choices)
+    # amount = models.DecimalField(max_digits=10, decimal_places=2)
+    # Django money app installed
+    rate = MoneyField(max_digits=14, decimal_places=2, null=True) #Do we need to add a default currency?
 
     def __str__(self):
-        return self.amount, self.currency
+        return self.rate

@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_countries',
+    'phonenumber_field',
+    'djmoney',
     'main',
     'frontdesk',
     'manager',
