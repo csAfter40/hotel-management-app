@@ -1,7 +1,7 @@
 from django.db import models
-from django_countries.fields import CountryField
+# from django_countries.fields import CountryField
 from phonenumber_field.modelfields import PhoneNumberField
-from djmoney.models.fields import MoneyField
+# from djmoney.models.fields import MoneyField
 
 
 class HotelLanguages(models.Model):
@@ -42,7 +42,7 @@ class Guest(models.Model):
     id_type = models.CharField(max_length=16, choices=id_type_choices)
     id_number = models.CharField(max_length=32)
     #django countries app https://github.com/SmileyChris/django-countries
-    nationality = CountryField()
+    nationality = models.ForeignKey('main.Country', on_delete=models.SET_NULL, null=True)
     # Phone number field app https://github.com/stefanfoulis/django-phonenumber-field
     phone_number = PhoneNumberField()
 
@@ -115,10 +115,10 @@ class Expense(models.Model):
     # ]
 
     title = models.CharField(max_length=128)
-    # currency = models.CharField(max_length=3, choices=currency_choices)
-    # amount = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.ForeignKey('main.Currency', on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=14, decimal_places=2)
     # Django money app installed
-    amount = MoneyField(max_digits=14, decimal_places=2)
+    # amount = MoneyField(max_digits=14, decimal_places=2)
     folio = models.ForeignKey(Folio, related_name='expenses', on_delete=models.CASCADE)
 
     def __str__(self):
