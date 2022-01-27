@@ -9,17 +9,17 @@ class User(AbstractUser):
 class Currency(models.Model):
     code = models.CharField(max_length=2)
     name = models.CharField(max_length=32)
-
-    def __str__(self):
-        return self.name
-
-class Language(models.Model):
-    code = models.CharField(max_length=2)
-    name = models.CharField(max_length=32)
     symbol = models.CharField(max_length=8, null=True, blank=True)
 
     def __str__(self):
         return self.code
+
+class Language(models.Model):
+    code = models.CharField(max_length=2)
+    name = models.CharField(max_length=32)
+
+    def __str__(self):
+        return self.name
 
 class Country(models.Model):
     code = models.CharField(max_length=2)
