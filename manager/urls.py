@@ -5,6 +5,7 @@ app_name = 'manager'
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('register', views.OwnerRegister.as_view(), name='register'),
     path('add_hotel', views.add_hotel, name='add_hotel'),
     path('hotel/<int:id>', views.detail_hotel, name='detail_hotel'),
     path('hotel/edit/<int:id>', views.edit_hotel, name='edit_hotel'),
