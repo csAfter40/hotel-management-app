@@ -4,7 +4,7 @@
 <div class="d-flex  justify-content-center">
     <div class=" bg-light w-25 p-3">
         {% if message %}
-        <div>{{ message }}</div>
+        <div class='text-danger'>{{ message }}</div>
         {% endif %}
     
         <form action="{% url 'main:register' %}" method="post" class="px-3 py-4 ">

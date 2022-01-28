@@ -1,6 +1,6 @@
-
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
+
 
 class Owner(models.Model):
     gender_choices = [
@@ -25,6 +25,7 @@ class Owner(models.Model):
     def __str__(self):
         return self.first_name, self.last_name
 
+
 class Hotel(models.Model):
     owner = models.ManyToManyField(Owner)
     name = models.CharField(max_length=128)
@@ -40,6 +41,7 @@ class Hotel(models.Model):
     def __str__(self):
         return self.name
 
+
 class Floor(models.Model):
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
     floor_name = models.CharField(max_length=32)
@@ -47,8 +49,8 @@ class Floor(models.Model):
     def __str__(self):
         return self.floor_name
 
-class Room(models.Model):
 
+class Room(models.Model):
     vacancy_choices = [
         ('V', 'Vacant'),
         ('O', 'Occupied'),
@@ -67,6 +69,7 @@ class Room(models.Model):
     
     def __str__(self):
         return self.room_name
+
 
 class Employee(models.Model):
     employee_type_choices = [
@@ -103,6 +106,7 @@ class Employee(models.Model):
     def __str__(self):
         return self.employee_type, self.first_name, self.last_name
 
+
 class RoomCleaning(models.Model):
     employee = models.ForeignKey(Employee, null=True, on_delete=models.SET_NULL)
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
@@ -111,8 +115,8 @@ class RoomCleaning(models.Model):
     def __str__(self):
         return f"{self.room} -> {self.employee}"
 
-class RoomRate(models.Model):
 
+class RoomRate(models.Model):
     room_type = models.ForeignKey('frontdesk.RoomType', on_delete=models.CASCADE)
     date = models.DateField()
     currency = models.ForeignKey('main.Currency', on_delete=models.CASCADE)

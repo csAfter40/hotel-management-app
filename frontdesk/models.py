@@ -13,7 +13,6 @@ class HotelLanguages(models.Model):
 
 
 class Guest(models.Model):
-
     gender_choices = [
         ('M', 'Male'),
         ('F', 'Female'),
@@ -53,6 +52,7 @@ class RoomType(models.Model):
 
     def __str__(self):
         return self.title
+
 
 class Reservation(models.Model):
     status_choices = [
@@ -101,11 +101,12 @@ class Reservation(models.Model):
     def __str__(self):
         return f"{self.guest} from {self.arrival_dater} to {self.departure_date}"
 
+
 class Folio(models.Model):
     reservation = models.OneToOneField(Reservation, related_name='folio', on_delete=models.CASCADE)
 
-class Expense(models.Model):
 
+class Expense(models.Model):
     title = models.CharField(max_length=128)
     currency = models.ForeignKey('main.Currency', on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=14, decimal_places=2)
