@@ -43,6 +43,9 @@
               <li class="nav-item">
                 <a class="nav-link" href="{% url 'main:logout' %}">Logout</a>
               </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'manager:register' %}">Register Owner</a>
+              </li>
             {% else %}
               <li class="nav-item">
                 <a class="nav-link" href="{% url 'main:login' %}">Login</a>

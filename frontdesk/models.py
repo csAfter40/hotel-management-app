@@ -29,7 +29,7 @@ class Guest(models.Model):
         ('P', 'passport'),
     ]
 
-    user = models.ForeignKey('main.User', null=True, on_delete=models.SET_NULL)
+    user = models.OneToOneField('main.User', null=True, on_delete=models.SET_NULL)
     first_name = models.CharField(max_length=32)
     last_name = models.CharField(max_length=32)
     gender = models.CharField(max_length=1, choices=gender_choices)

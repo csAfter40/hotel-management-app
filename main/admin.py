@@ -1,9 +1,10 @@
 from django.contrib import admin
-from .models import Currency, Language, Country
+from .models import Currency, Language, Country, User
 from manager.models import Owner, Hotel, Floor, Room, Employee, RoomCleaning, RoomRate
 from frontdesk.models import HotelLanguages, Guest, RoomType, Reservation, Folio, Expense
 
 # Register your models here.
+admin.site.register(User)
 admin.site.register(Currency)
 admin.site.register(Language)
 admin.site.register(Country)
