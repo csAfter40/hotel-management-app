@@ -4,6 +4,9 @@ from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
     
+    def is_owner(self):
+        return hasattr(self, 'owner')
+
     def __str__(self):
         return self.username
 

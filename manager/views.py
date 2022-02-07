@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.views.generic.edit import CreateView
-from .models import Owner
-from .forms import OwnerRegisterForm
+from .models import Hotel, Owner
+from .forms import OwnerRegisterForm, HotelCreateForm
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.utils import IntegrityError
@@ -31,16 +31,32 @@ class OwnerRegister(LoginRequiredMixin, CreateView):
             context['message'] = 'You already registered an owner with this user.'
             return render(request, template_name=self.template_name, context=context)
 
+
+class HotelCreate(LoginRequiredMixin, CreateView):
+    model = Hotel
+    form_class = HotelCreateForm
+    template_name = 'manager/create_hotel.html'
+    success_url = reverse_lazy('manager:index')
+    login_url = reverse_lazy('main:login')
+
+    # Set user as hotel owner
+    def form_valid(self, form):
+        hotel = form.save() # Form has to be saved before adding object to a many to many field.
+        owner = self.request.user.owner
+        hotel.owner.add(owner)
+        return super(HotelCreate, self).form_valid(form)
+
+
 def index(request):
     return render(request, 'manager/index.html')
-
-def add_hotel(request):
-    pass
 
 def detail_hotel(request, id):
     pass
 
 def edit_hotel(request, id):
+    pass
+
+def add_manager_to_hotel(request):
     pass
 
 def add_employee(request):

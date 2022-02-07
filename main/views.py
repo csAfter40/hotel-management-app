@@ -24,6 +24,9 @@ class LoginView(View):
         if user is not None:
             if user.is_active:
                 login(request, user)
+                # if user is an owner, redirect to manager homepage
+                if hasattr(user, 'owner'):
+                    return HttpResponseRedirect(reverse('manager:index'))
                 return render(request, 'main/index.html')
             return render(request, 'main/login.html', {'message': 'User is not active!'})
         return render(request, 'main/login.html', {'message': 'Invalid username or password.'})

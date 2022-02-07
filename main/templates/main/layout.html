@@ -40,17 +40,24 @@
               <a class="nav-link disabled" href="#">Disabled</a>
             </li> -->
             {% if user.is_authenticated %}
+              {% if user.is_owner %}
+                <li class="nav-item active">
+                  <a class="nav-link" href="{% url 'manager:index' %}">Owner Home</a>
+                </li>
+              {% else %}
+                <li class="nav-item active">
+                  <a class="nav-link" href="{% url 'manager:register' %}">Register Owner</a>
+                </li>
+              {% endif %}
               <li class="nav-item">
                 <a class="nav-link" href="{% url 'main:logout' %}">Logout</a>
               </li>
-              <li class="nav-item">
-                <a class="nav-link" href="{% url 'manager:register' %}">Register Owner</a>
-              </li>
+              
             {% else %}
-              <li class="nav-item">
+              <li class="nav-item active">
                 <a class="nav-link" href="{% url 'main:login' %}">Login</a>
               </li>
-              <li class="nav-item">
+              <li class="nav-item active">
                 <a class="nav-link" href="{% url 'main:register' %}">Register</a>
               </li>
             {% endif %}
