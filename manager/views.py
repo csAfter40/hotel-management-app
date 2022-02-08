@@ -1,9 +1,11 @@
 from django.shortcuts import render
+from django.views.generic.base import View
 from django.views.generic.edit import CreateView
 from .models import Hotel, Owner
 from .forms import OwnerRegisterForm, HotelCreateForm
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
+from .mixins import IsManagerMixin
 from django.db.utils import IntegrityError
 from django.contrib.auth.models import Group
 
@@ -32,7 +34,7 @@ class OwnerRegister(LoginRequiredMixin, CreateView):
             return render(request, template_name=self.template_name, context=context)
 
 
-class HotelCreate(LoginRequiredMixin, CreateView):
+class HotelCreate(LoginRequiredMixin, IsManagerMixin, CreateView):
     model = Hotel
     form_class = HotelCreateForm
     template_name = 'manager/create_hotel.html'
@@ -46,6 +48,12 @@ class HotelCreate(LoginRequiredMixin, CreateView):
         hotel.owner.add(owner)
         return super(HotelCreate, self).form_valid(form)
 
+
+class IndexView(LoginRequiredMixin, IsManagerMixin, View):
+    login_url = reverse_lazy('main:login')
+
+    def get(self, request, *args, **kwargs):
+        return render(request, 'manager/index.html')
 
 def index(request):
     return render(request, 'manager/index.html')
