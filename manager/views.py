@@ -1,8 +1,9 @@
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.views.generic.base import View
-from django.views.generic.edit import CreateView
-from .models import Hotel, Owner
-from .forms import OwnerRegisterForm, HotelCreateForm
+from django.views.generic.edit import CreateView, FormMixin
+from .models import Floor, Hotel, Owner
+from .forms import OwnerRegisterForm, HotelCreateForm, CreateFloorForm
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .mixins import IsManagerMixin
@@ -15,7 +16,7 @@ class OwnerRegister(LoginRequiredMixin, CreateView):
     form_class = OwnerRegisterForm
     template_name = 'manager/register.html'
     success_url = reverse_lazy('manager:index')
-    login_url = reverse_lazy('main:login')
+    # login_url = reverse_lazy('main:login')
 
     # Sets user field for owner and adds owners group to user
     def form_valid(self, form):
@@ -39,7 +40,7 @@ class HotelCreate(LoginRequiredMixin, IsManagerMixin, CreateView):
     form_class = HotelCreateForm
     template_name = 'manager/create_hotel.html'
     success_url = reverse_lazy('manager:index')
-    login_url = reverse_lazy('main:login')
+    # login_url = reverse_lazy('main:login')
 
     # Set user as hotel owner
     def form_valid(self, form):
@@ -50,13 +51,54 @@ class HotelCreate(LoginRequiredMixin, IsManagerMixin, CreateView):
 
 
 class IndexView(LoginRequiredMixin, IsManagerMixin, View):
-    login_url = reverse_lazy('main:login')
+    # login_url = reverse_lazy('main:login')
 
     def get(self, request, *args, **kwargs):
-        return render(request, 'manager/index.html')
+        hotels = Hotel.objects.filter(owner=self.request.user.owner)
+        print(hotels)
+        context = {
+            'hotels': hotels
+        }
+        return render(request, 'manager/index.html', context)
 
-def index(request):
-    return render(request, 'manager/index.html')
+
+class FloorManagerView(LoginRequiredMixin, IsManagerMixin, CreateView):
+
+    model = Floor
+    form_class = CreateFloorForm
+    template_name = 'manager/floor_manager.html'
+    # success_url = reverse_lazy('manager:floor_manager', kwargs={'id':2})
+    
+    def get(self, request, *args, **kwargs):
+        id = kwargs['id']
+        hotel = Hotel.objects.get(id=id)
+        floors = Floor.objects.all().order_by('sort_id')
+        context = {
+            'hotel': hotel,
+            'create_floor_form': CreateFloorForm(),
+            'floors': floors
+        }
+        return render(self.request, 'manager/floor_manager.html', context)
+
+    def form_valid(self, form):
+        id = self.request.POST['id']
+        hotel = Hotel.objects.get(id=id)
+        form.instance.hotel = hotel
+        form.save()
+        return HttpResponseRedirect(reverse_lazy('manager:floor_manager', kwargs={'id':id}))
+
+
+
+
+class HotelManagerView(LoginRequiredMixin, IsManagerMixin, View):
+
+    def get(self, request, *args, **kwargs):
+        id = self.kwargs['id']
+        hotel = Hotel.objects.get(id=id)
+        context = {
+            'hotel': hotel,
+        }
+        return render(self.request, 'manager/hotel_manager.html', context)
 
 def detail_hotel(request, id):
     pass

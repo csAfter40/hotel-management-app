@@ -35,6 +35,7 @@ class Hotel(models.Model):
     address_line_1 = models.CharField(max_length=64)
     address_line_2 = models.CharField(max_length=64, null=True, blank=True)
     zipcode = models.CharField(max_length=16)
+    email = models.EmailField(max_length=256)
     phone_number = PhoneNumberField()
     # GPS coordinates?
 
@@ -44,10 +45,12 @@ class Hotel(models.Model):
 
 class Floor(models.Model):
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
-    floor_name = models.CharField(max_length=32)
+    sort_id = models.IntegerField(blank=True, default=1)
+    name = models.CharField(max_length=32)
+    description = models.CharField(max_length=128, null=True, blank=True)
 
     def __str__(self):
-        return self.floor_name
+        return self.name
 
 
 class Room(models.Model):
