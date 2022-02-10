@@ -44,13 +44,18 @@ class Hotel(models.Model):
 
 
 class Floor(models.Model):
-    hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
+    hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, related_name='floors')
     sort_id = models.IntegerField(blank=True, default=1)
     name = models.CharField(max_length=32)
     description = models.CharField(max_length=128, null=True, blank=True)
 
+    class Meta:
+        unique_together = [['hotel', 'sort_id']]
+
     def __str__(self):
         return self.name
+
+    
 
 
 class Room(models.Model):
