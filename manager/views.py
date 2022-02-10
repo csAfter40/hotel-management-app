@@ -1,7 +1,7 @@
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.views.generic.base import View
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, UpdateView
 from .models import Floor, Hotel, Owner
 from .forms import OwnerRegisterForm, HotelCreateForm, CreateFloorForm
 from django.urls import reverse_lazy
@@ -52,7 +52,9 @@ class HotelCreate(LoginRequiredMixin, IsManagerMixin, CreateView):
 class IndexView(LoginRequiredMixin, IsManagerMixin, View):
 
     def get(self, request, *args, **kwargs):
-        hotels = Hotel.objects.filter(owner=self.request.user.owner)
+        # hotels = Hotel.objects.filter(owner=self.request.user.owner)
+        owner = self.request.user.owner
+        hotels = owner.hotel_set.all()
         print(hotels)
         context = {
             'hotels': hotels
@@ -77,6 +79,7 @@ class FloorManagerView(LoginRequiredMixin, IsManagerMixin, CreateView):
     def get(self, request, *args, **kwargs):
         floors = Floor.objects.filter(hotel=self.hotel).order_by('sort_id')
         context = {
+            'create': True,
             'hotel': self.hotel,
             'create_floor_form': self.form_class,
             'floors': floors
@@ -91,6 +94,42 @@ class FloorManagerView(LoginRequiredMixin, IsManagerMixin, CreateView):
         return HttpResponseRedirect(reverse_lazy('manager:floor_manager', kwargs={'id':self.hotel.id}))
 
 
+class FloorEditView(LoginRequiredMixin, IsManagerMixin, UpdateView):
+
+    model = Floor
+    form_class = CreateFloorForm
+    
+    
+    def setup(self, request, *args, **kwargs):
+        """Initialize attributes shared by all view methods."""
+        if hasattr(self, 'get') and not hasattr(self, 'head'):
+            self.head = self.get
+        self.request = request
+        self.args = args
+        self.kwargs = kwargs
+        pk = kwargs['pk']
+        self.floor = Floor.objects.get(id=pk)
+        self.hotel = self.floor.hotel
+        self.success_url = reverse_lazy('manager:floor_manager', kwargs={'id':self.hotel.id})
+
+    def get(self, request, *args, **kwargs):
+        floors = Floor.objects.filter(hotel=self.hotel).order_by('sort_id')
+
+        context = {
+            'floor': self.floor,
+            'create': False,
+            'hotel': self.hotel,
+            'create_floor_form': self.form_class(instance=self.floor),
+            'floors': floors
+        }
+        return render(self.request, 'manager/floor_manager.html', context)
+
+    # def form_valid(self, form):
+    #     form.instance.hotel = self.hotel
+    #     floor_count = self.hotel.floors.count()
+    #     form.instance.sort_id = floor_count + 1
+    #     form.save()
+    #     return HttpResponseRedirect(reverse_lazy('manager:floor_manager', kwargs={'id':self.hotel.id}))
 
 
 class HotelManagerView(LoginRequiredMixin, IsManagerMixin, View):
