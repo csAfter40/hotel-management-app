@@ -27,7 +27,7 @@ class Owner(models.Model):
 
 
 class Hotel(models.Model):
-    owner = models.ManyToManyField(Owner)
+    owners = models.ManyToManyField(Owner)
     name = models.CharField(max_length=128)
     country = models.ForeignKey('main.Country', on_delete=models.SET_NULL, null=True, related_name='hotels')
     state = models.CharField(max_length=32, null=True, blank=True)
