@@ -1,7 +1,7 @@
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.views.generic.base import View
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from .models import Floor, Hotel, Owner
 from .forms import OwnerRegisterForm, HotelCreateForm, CreateFloorForm
 from django.urls import reverse_lazy
@@ -124,12 +124,39 @@ class FloorEditView(LoginRequiredMixin, IsManagerMixin, UpdateView):
         }
         return render(self.request, 'manager/floor_manager.html', context)
 
-    # def form_valid(self, form):
-    #     form.instance.hotel = self.hotel
-    #     floor_count = self.hotel.floors.count()
-    #     form.instance.sort_id = floor_count + 1
-    #     form.save()
-    #     return HttpResponseRedirect(reverse_lazy('manager:floor_manager', kwargs={'id':self.hotel.id}))
+
+class FloorDeleteView(LoginRequiredMixin, IsManagerMixin, DeleteView):
+    
+    model = Floor
+    
+    def get_queryset(self):
+        """
+        Returns only the floors which user is in the owners of the hotel in which the floor is created.
+        """
+        queryset = super(FloorDeleteView, self).get_queryset()
+        return queryset.filter(hotel__in=self.request.user.owner.hotel_set.all())
+
+    def edit_sort_ids(self, hotel, sort_id):
+        """
+        Sets floor sort ids so that all sort ids can be sorted consecutively like '1, 2, 3 ... n' in a hotel with n floors.
+        """
+        floors = Floor.objects.filter(hotel=hotel)
+        for floor in floors:
+            if floor.sort_id>sort_id:
+                floor.sort_id -= 1
+                floor.save()
+
+    # Django 4.0 requires form_valid method to be overriden not delete method.
+    def form_valid(self, form):
+        """
+        Overriden the form_valid method so that edit_sort_ids method will be called after deleting the object.
+        """
+        self.object = self.get_object()
+        hotel = self.object.hotel
+        sort_id = self.object.sort_id
+        self.object.delete()
+        self.edit_sort_ids(hotel, sort_id)
+        return JsonResponse({}, status=200)
 
 
 class HotelManagerView(LoginRequiredMixin, IsManagerMixin, View):
@@ -141,6 +168,7 @@ class HotelManagerView(LoginRequiredMixin, IsManagerMixin, View):
             'hotel': hotel,
         }
         return render(self.request, 'manager/hotel_manager.html', context)
+
 
 @login_required
 def floor_move(request):
@@ -182,8 +210,6 @@ def floor_move(request):
         return JsonResponse({}, status=400)
 
     return JsonResponse({}, status=400)
-
-
 
 def detail_hotel(request, id):
     pass
