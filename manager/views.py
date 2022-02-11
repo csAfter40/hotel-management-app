@@ -6,7 +6,7 @@ from .models import Floor, Hotel, Owner
 from .forms import OwnerRegisterForm, HotelCreateForm, CreateFloorForm
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .mixins import IsManagerMixin
+from .mixins import IsManagerMixin, OwnerCheckMixin
 from django.db.utils import IntegrityError
 from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required
@@ -62,7 +62,18 @@ class IndexView(LoginRequiredMixin, IsManagerMixin, View):
         return render(request, 'manager/index.html', context)
 
 
-class FloorManagerView(LoginRequiredMixin, IsManagerMixin, CreateView):
+class HotelManagerView(LoginRequiredMixin, IsManagerMixin, OwnerCheckMixin, View):
+
+    def get(self, request, *args, **kwargs):
+        id = self.kwargs['hotel_id']
+        hotel = Hotel.objects.get(id=id)
+        context = {
+            'hotel': hotel,
+        }
+        return render(self.request, 'manager/hotel_manager.html', context)
+
+
+class FloorManagerView(LoginRequiredMixin, IsManagerMixin, OwnerCheckMixin, CreateView):
 
     form_class = CreateFloorForm
     
@@ -73,7 +84,7 @@ class FloorManagerView(LoginRequiredMixin, IsManagerMixin, CreateView):
         self.request = request
         self.args = args
         self.kwargs = kwargs
-        id = kwargs['id']
+        id = kwargs['hotel_id']
         self.hotel = Hotel.objects.get(id=id)
 
     def get(self, request, *args, **kwargs):
@@ -91,10 +102,10 @@ class FloorManagerView(LoginRequiredMixin, IsManagerMixin, CreateView):
         floor_count = self.hotel.floors.count()
         form.instance.sort_id = floor_count + 1
         form.save()
-        return HttpResponseRedirect(reverse_lazy('manager:floor_manager', kwargs={'id':self.hotel.id}))
+        return HttpResponseRedirect(reverse_lazy('manager:floor_manager', kwargs={'hotel_id':self.hotel.id}))
 
 
-class FloorEditView(LoginRequiredMixin, IsManagerMixin, UpdateView):
+class FloorEditView(LoginRequiredMixin, IsManagerMixin, OwnerCheckMixin, UpdateView):
 
     model = Floor
     form_class = CreateFloorForm
@@ -110,7 +121,7 @@ class FloorEditView(LoginRequiredMixin, IsManagerMixin, UpdateView):
         pk = kwargs['pk']
         self.floor = Floor.objects.get(id=pk)
         self.hotel = self.floor.hotel
-        self.success_url = reverse_lazy('manager:floor_manager', kwargs={'id':self.hotel.id})
+        self.success_url = reverse_lazy('manager:floor_manager', kwargs={'hotel_id':self.hotel.id})
 
     def get(self, request, *args, **kwargs):
         floors = Floor.objects.filter(hotel=self.hotel).order_by('sort_id')
@@ -125,7 +136,7 @@ class FloorEditView(LoginRequiredMixin, IsManagerMixin, UpdateView):
         return render(self.request, 'manager/floor_manager.html', context)
 
 
-class FloorDeleteView(LoginRequiredMixin, IsManagerMixin, DeleteView):
+class FloorDeleteView(LoginRequiredMixin, IsManagerMixin, OwnerCheckMixin, DeleteView):
     
     model = Floor
     
@@ -158,58 +169,112 @@ class FloorDeleteView(LoginRequiredMixin, IsManagerMixin, DeleteView):
         self.edit_sort_ids(hotel, sort_id)
         return JsonResponse({}, status=200)
 
+# @login_required
+# def floor_move(request, *args, **kwargs):
+#     data = json.loads(request.body)
+#     floor_id = data['floor_id']
+#     direction = data['direction']
 
-class HotelManagerView(LoginRequiredMixin, IsManagerMixin, View):
+#     floor = Floor.objects.get(id=floor_id)
+#     sort_id = floor.sort_id
+#     hotel = floor.hotel
+#     # Check if the user is in owners of the hotel
+#     if not request.user.is_owner() or request.user.owner not in hotel.owners.all():
+#         return JsonResponse({}, status=400)
+#     floors = Floor.objects.filter(hotel=hotel).order_by('sort_id')
+
+#     if direction == 'up':
+#         if sort_id > 1:
+#             # Switch sort_id's of 2 floors. 
+#             other_floor = floors[sort_id-2]
+#             floor.sort_id = 0
+#             floor.save()
+#             floor.sort_id, other_floor.sort_id = other_floor.sort_id, sort_id
+#             other_floor.save()
+#             floor.save()
+#             return JsonResponse({}, status=200)
+#         return JsonResponse({}, status=400)
+
+#     elif direction == 'down':
+#         print(sort_id)
+#         if sort_id < floors.count():
+#             # Switch sort_id's of 2 floors. 
+#             other_floor = floors[sort_id]
+#             floor.sort_id = 0
+#             floor.save()
+#             floor.sort_id, other_floor.sort_id = other_floor.sort_id, sort_id
+#             other_floor.save()
+#             floor.save()
+#             return JsonResponse({}, status=200)
+#         return JsonResponse({}, status=400)
+
+#     return JsonResponse({}, status=400)
+
+
+class FloorMoveView(LoginRequiredMixin, IsManagerMixin, OwnerCheckMixin, View):
+
+    def post(self, request, *args, **kwargs):
+        data = json.loads(request.body)
+        floor_id = data['floor_id']
+        direction = data['direction']
+
+        floor = Floor.objects.get(id=floor_id)
+        sort_id = floor.sort_id
+        hotel = floor.hotel
+        # Check if the user is in owners of the hotel
+        if not request.user.is_owner() or request.user.owner not in hotel.owners.all():
+            return JsonResponse({}, status=400)
+        floors = Floor.objects.filter(hotel=hotel).order_by('sort_id')
+
+        if direction == 'up':
+            if sort_id > 1:
+                # Switch sort_id's of 2 floors. 
+                other_floor = floors[sort_id-2]
+                floor.sort_id = 0
+                floor.save()
+                floor.sort_id, other_floor.sort_id = other_floor.sort_id, sort_id
+                other_floor.save()
+                floor.save()
+                return JsonResponse({}, status=200)
+            return JsonResponse({}, status=400)
+
+        elif direction == 'down':
+            print(sort_id)
+            if sort_id < floors.count():
+                # Switch sort_id's of 2 floors. 
+                other_floor = floors[sort_id]
+                floor.sort_id = 0
+                floor.save()
+                floor.sort_id, other_floor.sort_id = other_floor.sort_id, sort_id
+                other_floor.save()
+                floor.save()
+                return JsonResponse({}, status=200)
+            return JsonResponse({}, status=400)
+
+        return JsonResponse({}, status=400)
+
+
+class RoomTypesView(LoginRequiredMixin, IsManagerMixin, OwnerCheckMixin, View):
 
     def get(self, request, *args, **kwargs):
-        id = self.kwargs['id']
+        id = kwargs['hotel_id']
         hotel = Hotel.objects.get(id=id)
         context = {
-            'hotel': hotel,
+            'hotel': hotel
         }
-        return render(self.request, 'manager/hotel_manager.html', context)
+        return render(request, 'manager/room_types.html', context)
 
 
-@login_required
-def floor_move(request):
-    data = json.loads(request.body)
-    floor_id = data['floor_id']
-    direction = data['direction']
+class RoomManagerView(LoginRequiredMixin, IsManagerMixin, OwnerCheckMixin, View):
 
-    floor = Floor.objects.get(id=floor_id)
-    sort_id = floor.sort_id
-    hotel = floor.hotel
-    # Check if the user is in owners of the hotel
-    if not request.user.is_owner() or request.user.owner not in hotel.owners.all():
-        return JsonResponse({}, status=400)
-    floors = Floor.objects.filter(hotel=hotel).order_by('sort_id')
+    def get(self, request, *args, **kwargs):
+        id = kwargs['hotel_id']
+        hotel = Hotel.objects.get(id=id)
+        context = {
+            'hotel': hotel
+        }
+        return render(request, 'manager/room_manager.html', context)
 
-    if direction == 'up':
-        if sort_id > 1:
-            # Switch sort_id's of 2 floors. 
-            other_floor = floors[sort_id-2]
-            floor.sort_id = 0
-            floor.save()
-            floor.sort_id, other_floor.sort_id = other_floor.sort_id, sort_id
-            other_floor.save()
-            floor.save()
-            return JsonResponse({}, status=200)
-        return JsonResponse({}, status=400)
-
-    elif direction == 'down':
-        print(sort_id)
-        if sort_id < floors.count():
-            # Switch sort_id's of 2 floors. 
-            other_floor = floors[sort_id]
-            floor.sort_id = 0
-            floor.save()
-            floor.sort_id, other_floor.sort_id = other_floor.sort_id, sort_id
-            other_floor.save()
-            floor.save()
-            return JsonResponse({}, status=200)
-        return JsonResponse({}, status=400)
-
-    return JsonResponse({}, status=400)
 
 def detail_hotel(request, id):
     pass
