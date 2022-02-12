@@ -20,3 +20,9 @@ urlpatterns = [
     path('employee/<int:id>', views.detail_employee, name='detail_employee'),
     path('employee/edit/<int:id>', views.edit_employee, name='edit_employee'),  
 ]
+
+htmx_urlpatterns = [
+    path('<int:hotel_id>/floor_manager/del/<int:pk>', views.htmx_delete, name='htmx_delete'),
+]
+
+urlpatterns += htmx_urlpatterns

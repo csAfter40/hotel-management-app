@@ -234,6 +234,34 @@ class RoomManagerView(HotelOwnerMixin, View):
         return render(request, 'manager/room_manager.html', context)
 
 
+def htmx_delete(request, *args, **kwargs):
+
+    def edit_sort_ids(hotel, sort_id):
+        """
+        Sets floor sort ids so that all sort ids can be sorted consecutively like '1, 2, 3 ... n' in a hotel with n floors.
+        """
+        floors = Floor.objects.filter(hotel=hotel)
+        for floor in floors:
+            if floor.sort_id>sort_id:
+                floor.sort_id -= 1
+                floor.save()
+    
+    print(args)
+    print(kwargs)
+    floor_id = kwargs['pk']
+    floor = Floor.objects.get(id=floor_id)
+    hotel = floor.hotel
+    sort_id = floor.sort_id
+    floor.delete()
+    edit_sort_ids(hotel, sort_id)
+    floors = hotel.floors.order_by('sort_id')
+    context = {
+        'floors': floors,
+        'hotel': hotel
+    }
+    return render(request, 'manager/table_floors.html', context)
+
+
 def detail_hotel(request, id):
     pass
 

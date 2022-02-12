@@ -1,4 +1,5 @@
 from django.http import HttpResponseRedirect
+from django.http.response import HttpResponse
 from django.shortcuts import render
 from django.views import View
 from .models import User
@@ -59,16 +60,15 @@ class RegisterView(View):
         login(request, user)
         return HttpResponseRedirect(reverse('main:index'))
 
-
-def login_view(request):
-    context = {
-
-    }
-    return render(request, 'main/login.html', context)
-
-def register(request):
-    context = {}
-    return render(request, 'main/register.html', context)
+def check_username(request, *args, **kwargs):
+    username = request.POST.get('username')
+    if len(username)>=3:
+        if User.objects.filter(username=username).exists():
+            return HttpResponse('<p class="mx-2 text-danger" id="username_check_text"><small><i class="bi bi-x-circle"></i> This username exists</small></p>')
+        else:
+            return HttpResponse('<p class="mx-2 text-success" id="username_check_text"><small><i class="bi bi-check2-circle"></i> This username is available</small></p>')
+    else:
+        return HttpResponse('<p class="text-muted mx-2" id="username_check_text"></p>')
 
 def register_guest(request):
     pass

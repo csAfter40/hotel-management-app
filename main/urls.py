@@ -13,3 +13,9 @@ urlpatterns = [
     # path('register/guest', views.register_guest, name='register_guest'),
     # path('register/manager', views.register_manager, name='register_manager'),
 ]
+
+htmx_urlpatterns = [
+    path('check_username', views.check_username, name='check_username'),
+]
+
+urlpatterns += htmx_urlpatterns

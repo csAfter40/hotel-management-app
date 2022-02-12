@@ -6,6 +6,7 @@ In this project I have experienced:
     * organizing multiple apps in a project,
     * running a project in a virtual environment,
     * installing and using some django packages,
+    * using htmx for ajax
     so far...
 
 Project specifications:
