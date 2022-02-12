@@ -1,4 +1,4 @@
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.views.generic.base import View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
@@ -6,7 +6,7 @@ from .models import Floor, Hotel, Owner
 from .forms import OwnerRegisterForm, HotelCreateForm, CreateFloorForm
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .mixins import IsManagerMixin, OwnerCheckMixin
+from .mixins import HotelOwnerMixin, IsManagerMixin, OwnerCheckMixin
 from django.db.utils import IntegrityError
 from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required
@@ -62,8 +62,7 @@ class IndexView(LoginRequiredMixin, IsManagerMixin, View):
         return render(request, 'manager/index.html', context)
 
 
-class HotelManagerView(LoginRequiredMixin, IsManagerMixin, OwnerCheckMixin, View):
-
+class HotelManagerView(HotelOwnerMixin, View):
     def get(self, request, *args, **kwargs):
         id = self.kwargs['hotel_id']
         hotel = Hotel.objects.get(id=id)
@@ -73,7 +72,7 @@ class HotelManagerView(LoginRequiredMixin, IsManagerMixin, OwnerCheckMixin, View
         return render(self.request, 'manager/hotel_manager.html', context)
 
 
-class FloorManagerView(LoginRequiredMixin, IsManagerMixin, OwnerCheckMixin, CreateView):
+class FloorManagerView(HotelOwnerMixin, CreateView):
 
     form_class = CreateFloorForm
     
@@ -105,7 +104,7 @@ class FloorManagerView(LoginRequiredMixin, IsManagerMixin, OwnerCheckMixin, Crea
         return HttpResponseRedirect(reverse_lazy('manager:floor_manager', kwargs={'hotel_id':self.hotel.id}))
 
 
-class FloorEditView(LoginRequiredMixin, IsManagerMixin, OwnerCheckMixin, UpdateView):
+class FloorEditView(HotelOwnerMixin, UpdateView):
 
     model = Floor
     form_class = CreateFloorForm
@@ -136,7 +135,7 @@ class FloorEditView(LoginRequiredMixin, IsManagerMixin, OwnerCheckMixin, UpdateV
         return render(self.request, 'manager/floor_manager.html', context)
 
 
-class FloorDeleteView(LoginRequiredMixin, IsManagerMixin, OwnerCheckMixin, DeleteView):
+class FloorDeleteView(HotelOwnerMixin, DeleteView):
     
     model = Floor
     
@@ -169,49 +168,8 @@ class FloorDeleteView(LoginRequiredMixin, IsManagerMixin, OwnerCheckMixin, Delet
         self.edit_sort_ids(hotel, sort_id)
         return JsonResponse({}, status=200)
 
-# @login_required
-# def floor_move(request, *args, **kwargs):
-#     data = json.loads(request.body)
-#     floor_id = data['floor_id']
-#     direction = data['direction']
 
-#     floor = Floor.objects.get(id=floor_id)
-#     sort_id = floor.sort_id
-#     hotel = floor.hotel
-#     # Check if the user is in owners of the hotel
-#     if not request.user.is_owner() or request.user.owner not in hotel.owners.all():
-#         return JsonResponse({}, status=400)
-#     floors = Floor.objects.filter(hotel=hotel).order_by('sort_id')
-
-#     if direction == 'up':
-#         if sort_id > 1:
-#             # Switch sort_id's of 2 floors. 
-#             other_floor = floors[sort_id-2]
-#             floor.sort_id = 0
-#             floor.save()
-#             floor.sort_id, other_floor.sort_id = other_floor.sort_id, sort_id
-#             other_floor.save()
-#             floor.save()
-#             return JsonResponse({}, status=200)
-#         return JsonResponse({}, status=400)
-
-#     elif direction == 'down':
-#         print(sort_id)
-#         if sort_id < floors.count():
-#             # Switch sort_id's of 2 floors. 
-#             other_floor = floors[sort_id]
-#             floor.sort_id = 0
-#             floor.save()
-#             floor.sort_id, other_floor.sort_id = other_floor.sort_id, sort_id
-#             other_floor.save()
-#             floor.save()
-#             return JsonResponse({}, status=200)
-#         return JsonResponse({}, status=400)
-
-#     return JsonResponse({}, status=400)
-
-
-class FloorMoveView(LoginRequiredMixin, IsManagerMixin, OwnerCheckMixin, View):
+class FloorMoveView(HotelOwnerMixin, View):
 
     def post(self, request, *args, **kwargs):
         data = json.loads(request.body)
@@ -254,7 +212,7 @@ class FloorMoveView(LoginRequiredMixin, IsManagerMixin, OwnerCheckMixin, View):
         return JsonResponse({}, status=400)
 
 
-class RoomTypesView(LoginRequiredMixin, IsManagerMixin, OwnerCheckMixin, View):
+class RoomTypesView(HotelOwnerMixin, View):
 
     def get(self, request, *args, **kwargs):
         id = kwargs['hotel_id']
@@ -265,7 +223,7 @@ class RoomTypesView(LoginRequiredMixin, IsManagerMixin, OwnerCheckMixin, View):
         return render(request, 'manager/room_types.html', context)
 
 
-class RoomManagerView(LoginRequiredMixin, IsManagerMixin, OwnerCheckMixin, View):
+class RoomManagerView(HotelOwnerMixin, View):
 
     def get(self, request, *args, **kwargs):
         id = kwargs['hotel_id']
