@@ -46,8 +46,7 @@ document.body.addEventListener('htmx:configRequest', (event) => {
 
 
 // reload table button events after table content loaded by htmx
-document.body.addEventListener('htmx:afterOnLoad', (event) => {
-    console.log('response received')
+document.body.addEventListener('htmx:afterSwap', (event) => {
     setMoveButtonsEvents();
     setDeleteButtonsEvents();
   })

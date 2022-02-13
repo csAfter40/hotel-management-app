@@ -246,8 +246,6 @@ def htmx_delete(request, *args, **kwargs):
                 floor.sort_id -= 1
                 floor.save()
     
-    print(args)
-    print(kwargs)
     floor_id = kwargs['pk']
     floor = Floor.objects.get(id=floor_id)
     hotel = floor.hotel

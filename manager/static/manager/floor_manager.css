@@ -1,0 +1,13 @@
+.animate-table.htmx-swapping {
+    opacity: 0;
+    transition: opacity 100ms ease-out;
+}
+
+.animate-table.htmx-added {
+    opacity: 0;
+    
+}
+.animate-table {
+    opacity: 1;
+    transition: opacity 300ms ease-out;
+}
