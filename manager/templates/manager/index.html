@@ -1,0 +1,18 @@
+{% extends 'main/layout.html' %}
+
+{% block body %}
+<h1>Manager Homepage {{user.owner.first_name}} {{user.owner.last_name}}</h1>
+
+{% if hotels %}
+    <ul>
+        {% for hotel in hotels %}
+            <li><a href="{% url 'manager:hotel_manager' hotel.id %}">{{hotel.name}}</a></li>
+        {% endfor %}
+    </ul>
+    
+{% else %}
+    You havent registered any hotels. <a href="{% url 'manager:create_hotel' %}">Register hotel</a>
+{% endif %}
+
+
+{% endblock %}
