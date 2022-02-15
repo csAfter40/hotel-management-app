@@ -1,5 +1,6 @@
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
+from manager.models import RoomType
 
 
 class HotelLanguages(models.Model):
@@ -46,12 +47,12 @@ class Guest(models.Model):
         return f"{self.first_name} {self.last_name}"
 
 
-class RoomType(models.Model):
-    title = models.CharField(max_length=32, unique=True)
-    hotel = models.ForeignKey('manager.Hotel', on_delete=models.CASCADE, related_name='room_types')
+# class RoomType(models.Model):
+#     title = models.CharField(max_length=32, unique=True)
+#     hotel = models.ForeignKey('manager.Hotel', on_delete=models.CASCADE, related_name='room_types')
 
-    def __str__(self):
-        return self.title
+#     def __str__(self):
+#         return self.title
 
 
 class Reservation(models.Model):

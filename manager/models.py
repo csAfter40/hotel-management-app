@@ -55,7 +55,30 @@ class Floor(models.Model):
     def __str__(self):
         return self.name
 
-    
+
+class Bed(models.Model):
+    name = models.CharField(max_length=64)
+    capacity = models.PositiveSmallIntegerField()
+    description = models.CharField(max_length=64, null=True, blank=True)
+    hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, related_name='beds') # for custom defined beds.
+    is_general = models.BooleanField(default=False) # for general use beds.
+
+
+class RoomType(models.Model):
+    title = models.CharField(max_length=32, unique=True)
+    hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, related_name='room_types')
+    beds = models.JSONField()
+    room_size = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
+    # Room features
+    has_air_con = models.BooleanField(default=False, verbose_name="A/C")
+    has_wifi = models.BooleanField(default=False, verbose_name="wifi")
+    has_tv = models.BooleanField(default=False, verbose_name="TV")
+    has_fridge = models.BooleanField(default=False, verbose_name="fridge")
+    has_hot_water = models.BooleanField(default=False, verbose_name="hot water")
+
+
+    def __str__(self):
+        return self.title
 
 
 class Room(models.Model):
@@ -70,7 +93,7 @@ class Room(models.Model):
     ]
 
     floor = models.ForeignKey(Floor, null=True, on_delete=models.SET_NULL)
-    room_type = models.ForeignKey('frontdesk.RoomType', null=True, on_delete=models.SET_NULL)
+    room_type = models.ForeignKey(RoomType, null=True, on_delete=models.SET_NULL)
     room_name = models.CharField(max_length=16)
     vacansy = models.CharField(max_length=1, choices=vacancy_choices)
     cleaning_status = models.CharField(max_length=1, choices=cleaning_status_choices)
@@ -125,7 +148,7 @@ class RoomCleaning(models.Model):
 
 
 class RoomRate(models.Model):
-    room_type = models.ForeignKey('frontdesk.RoomType', on_delete=models.CASCADE)
+    room_type = models.ForeignKey(RoomType, on_delete=models.CASCADE)
     date = models.DateField()
     currency = models.ForeignKey('main.Currency', on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=14, decimal_places=2)
