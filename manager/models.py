@@ -60,15 +60,19 @@ class Bed(models.Model):
     name = models.CharField(max_length=64)
     capacity = models.PositiveSmallIntegerField()
     description = models.CharField(max_length=64, null=True, blank=True)
-    hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, related_name='beds') # for custom defined beds.
+    hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, related_name='beds', null=True, blank=True) # for custom defined beds.
     is_general = models.BooleanField(default=False) # for general use beds.
+
+    def __str__(self):
+        return self.name
 
 
 class RoomType(models.Model):
     title = models.CharField(max_length=32, unique=True)
+    description = models.CharField(max_length=512, null=True, blank=True)
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, related_name='room_types')
-    beds = models.JSONField()
     room_size = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
+
     # Room features
     has_air_con = models.BooleanField(default=False, verbose_name="A/C")
     has_wifi = models.BooleanField(default=False, verbose_name="wifi")
@@ -79,6 +83,15 @@ class RoomType(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class RoomBed(models.Model):
+    room_type = models.ForeignKey(RoomType, on_delete=models.CASCADE)
+    bed = models.ForeignKey(Bed, on_delete=models.CASCADE)
+    quantity = models.PositiveSmallIntegerField()
+
+    def __str__(self):
+        return f'{self.quantity} x {self.name}'
 
 
 class Room(models.Model):

@@ -12,17 +12,18 @@ urlpatterns = [
     path('hotel/edit/<int:id>', views.edit_hotel, name='edit_hotel'),
     path('<int:hotel_id>/floor_manager', views.FloorManagerView.as_view(), name='floor_manager'),
     path('<int:hotel_id>/floor_manager/edit/<pk>', views.FloorEditView.as_view(), name='floor_edit'),
-    path('<int:hotel_id>/floor_manager/delete/<pk>', views.FloorDeleteView.as_view(), name='floor_delete'),
     path('<int:hotel_id>/floor_manager/floor_move', views.FloorMoveView.as_view(), name='floor_move'),
     path('<int:hotel_id>/room_manager', views.RoomManagerView.as_view(), name='room_manager'),
     path('<int:hotel_id>/room_types', views.RoomTypesView.as_view(), name='room_types'),
+    path('<int:hotel_id>/room_types/edit/<pk>', views.RoomTypesEditView.as_view(), name='room_type_edit'),
     path('add_employee', views.add_employee, name='add_employee'),
     path('employee/<int:id>', views.detail_employee, name='detail_employee'),
     path('employee/edit/<int:id>', views.edit_employee, name='edit_employee'),  
 ]
 
 htmx_urlpatterns = [
-    path('<int:hotel_id>/floor_manager/del/<int:pk>', views.htmx_delete, name='htmx_delete'),
+    path('<int:hotel_id>/floor_manager/del/<int:pk>', views.floor_delete, name='floor_delete'),
+    path('<int:hotel_id>/room_types/del/<int:pk>', views.room_type_delete, name='room_type_delete'),
 ]
 
 urlpatterns += htmx_urlpatterns

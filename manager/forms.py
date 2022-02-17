@@ -1,5 +1,5 @@
 from django import forms
-from .models import Owner, Hotel, Floor
+from .models import Owner, Hotel, Floor, RoomType, Bed, RoomBed
 
 class DateInput(forms.DateInput):
     input_type = 'date'
@@ -52,4 +52,54 @@ class CreateFloorForm(forms.ModelForm):
         labels = {
             'name': 'Floor Name',
             'description': 'Description'
+        }
+
+class CreateRoomTypeForm(forms.ModelForm):
+
+    class Meta:
+        model = RoomType
+        exclude = ['hotel']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control'}),
+            'room_size': forms.NumberInput(attrs={'class': 'form-control'}),
+            'has_air_con': forms.CheckboxInput(attrs={'class': 'form-check-input', 'type': 'checkbox'}),
+            'has_wifi': forms.CheckboxInput(attrs={'class': 'form-check-input', 'type': 'checkbox'}),
+            'has_tv': forms.CheckboxInput(attrs={'class': 'form-check-input', 'type': 'checkbox'}),
+            'has_fridge': forms.CheckboxInput(attrs={'class': 'form-check-input', 'type': 'checkbox'}),
+            'has_hot_water': forms.CheckboxInput(attrs={'class': 'form-check-input', 'type': 'checkbox'}),
+        }
+        labels = {
+            'title': 'Title',
+            'description': 'Description',
+            'room_size': 'Room Size',
+            'has_air_con': 'A/C',
+            'has_wifi': 'WiFi',
+            'has_tv': 'TV',
+            'has_fridge': 'Fridge',
+            'has_hot_water': 'Hot Water',
+        }
+
+class BedForm(forms.ModelForm):
+    class Meta:
+        model = Bed
+        fields = ['name', 'capacity', 'description']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'capacity': forms.NumberInput(attrs={'class': 'form-control'}),
+            'description': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+        labels = {
+            'name': 'Name',
+            'capacity': 'Capacity',
+            'description': 'Description'
+        }
+
+class RoomBedForm(forms.ModelForm):
+    class Meta:
+        model = RoomBed
+        exclude = ['room_type']
+        widgets = {
+            'bed': forms.Select(attrs={'class': 'form-control', 'id': 'bed-list'}),
+            'quantity': forms.NumberInput(attrs={'class': 'form-control'})
         }

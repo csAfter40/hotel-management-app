@@ -1,15 +1,172 @@
 {% extends 'main/layout.html'  %}
 {% load static %}
 
-{% block body %}
-
-<h2 class="text-center m-3">{{hotel.name}} Room Types</h2>
-
-<div class="d-flex  justify-content-center mb-5">
-    
-    
-</div>
+{% block style %}
+    <link rel="stylesheet" href="{% static 'manager/floor_manager.css' %}">
 {% endblock %}
+
+{% block body %}
+{% load crispy_forms_tags %}
+
+<h2 class="text-center m-3" id="main_title">{{hotel.name}} Room Types </h2>
+
+<div class="d-flex  justify-content-center mb-5 px-3">
+    
+    {% if create %}
+        <!-- Create Form -->
+        
+        <div class="container-sm bg-light py-2">
+            <form action="{% url 'manager:room_types' hotel.id %}">
+                {% csrf_token %}
+                <div class="row mb-4">
+                    <div class="col">
+                        <h3>Bed</h3>
+                        <div class="row">
+                            <div class="col">
+                                {{room_bed_form.bed|as_crispy_field}}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col">
+                                <button class="btn btn-primary btn-block" id="add-bed-button">Add to Room List</button>
+                            </div>
+                            <div class="col">
+                                <button class="btn btn-primary btn-block">Create New Bed</button>
+                            </div>
+                        </div>
+                        <div class="my-3">
+                            <table class="table" id="bed-table" style="display: none;">
+                                <!-- <thead class="thead-dark"> -->
+                                <thead>
+                                <tr>
+                                    <th class="align-middle col-md-9" scope="col">Bed Type</th>
+                                    <th class="align-middle text-center col-md-1" scope="col">Qty</th>
+                                    <th class="align-middle text-center col-md-1" scope="col"></th>
+                                    <th class="align-middle text-center col-md-1" scope="col"></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- <tr>
+                                        <td>Bed Name</td>
+                                        <td>1</td>
+                                        <td><i class="bi bi-dash-circle"></i></td>
+                                        <td><i class="bi bi-plus-circle"></i></td>
+                                        
+                                    </tr> -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col">
+                        <h3>Room Type</h3>
+                        {{room_type_form.title|as_crispy_field}}
+                        {{room_type_form.description|as_crispy_field}}
+                        {{room_type_form.room_size|as_crispy_field}}
+                        <!-- <div class="row">
+                            <div class="col">
+                                {{room_type_form.title.as_p}}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                {{room_type_form.description}}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                {{room_type_form.room_size}}
+                            </div>
+                        </div> -->
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col">
+                        <h3>Features</h3>
+                        <div class="row">
+                            <div class="col">
+                                <!-- <div class="form-check">
+                                    {{room_type_form.has_air_con}}
+                                    <label class="form-check-label">{{room_type_form.has_air_con.label}}</label>
+                                </div> -->
+                                {{room_type_form.has_air_con|as_crispy_field}}
+                            </div>
+                            <div class="col">
+                                    {{room_type_form.has_wifi|as_crispy_field}}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                    {{room_type_form.has_tv|as_crispy_field}}
+                            </div>
+                            <div class="col">
+                                    {{room_type_form.has_fridge|as_crispy_field}}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                    {{room_type_form.has_hot_water|as_crispy_field}}
+                            </div>
+                            <div class="col">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <input type="submit" value="Submit Room Type" class="btn btn-primary btn-block" >
+                    </div>
+                </div>
+            </form>
+            
+        </div>
+        <!-- <div class=" bg-light py-2" style="border-right: 1px solid #888; width: 250px;">
+            <div class="text-center my-2" ><h3>Create Room Type</h3></div>
+            {% if message %}
+            <div class='text-danger'>{{ message }}</div>
+            {% endif %}
+            <form action="{% url 'manager:room_types' hotel.id %}" method="post" class="px-3 ">
+                {% csrf_token %}
+                {{ create_room_type_form.as_p }}
+                <input type="hidden" name="id" value="{{hotel.id}}">
+                <input class="btn btn-primary" type="submit" value="Submit Room Type">
+            </form>
+        </div> -->
+    {% else %}
+        <!-- Update Form -->
+        <div class=" bg-light py-2" style="border-right: 1px solid #888; width: 250px;">
+            <div class="text-center my-2" ><h3>Update Room Type</h3></div>
+            {% if message %}
+            <div class='text-danger'>{{ message }}</div>
+            {% endif %}
+            <form action="{% url 'manager:room_type_edit' hotel_id=hotel.id pk=room_type.id %}" method="post" class="px-3 ">
+                {% csrf_token %}
+                {{ create_room_type_form.as_p }}
+                <input type="hidden" name="id" value="{{hotel.id}}">
+                <input class="btn btn-primary" type="submit" value="Update">
+                <a href="{% url 'manager:room_types' hotel.id %}" class="btn btn-danger">Cancel</a>
+            </form>
+        </div>
+    {% endif %}
+
+    {% if not room_types %}
+        <div class="bg-light w-75 p-3">
+            <div class="alert alert-warning" role="alert">
+                No room types available. 
+            </div>
+        </div>
+    
+    {% else %}
+        <!-- Floors table -->
+        {% include 'manager/table_room_types.html' with room_types=room_types hotel=hotel %}
+        
+    {% endif %}
+</div>
+
+{% endblock %}
+
 {% block script %}
-<!-- <script src="{% static 'manager/floor_manager.js' %}"></script> -->
+<script src="{% static 'manager/room_type.js' %}"></script>
 {% endblock %}

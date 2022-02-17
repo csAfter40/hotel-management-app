@@ -3,6 +3,7 @@ Babel==2.9.1
 backports.zoneinfo==0.2.1
 Django==4.0.1
 django-countries==7.2.1
+django-crispy-forms==1.14.0
 django-money==2.1.1
 django-phonenumber-field==6.0.0
 django-utils-six==2.0

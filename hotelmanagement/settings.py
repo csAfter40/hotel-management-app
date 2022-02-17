@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django_countries',
     'phonenumber_field',
     'djmoney',
+    'crispy_forms',
     'main',
     'frontdesk',
     'manager',
@@ -73,6 +74,8 @@ TEMPLATES = [
         },
     },
 ]
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 WSGI_APPLICATION = 'hotelmanagement.wsgi.application'
 
