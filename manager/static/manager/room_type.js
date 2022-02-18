@@ -1,42 +1,3 @@
-function setMoveButtonsEvents() {
-    let floorMoveButtons = document.querySelectorAll(".floor-move");
-    for(i=0; i<floorMoveButtons.length; i++) {
-        const button = floorMoveButtons[i];
-        button.onclick = function() {
-            fetch("floor_manager/floor_move", {
-                method: "POST",
-                body: JSON.stringify({
-                    floor_id: parseInt(button.dataset.floor),
-                    direction: button.dataset.direction
-                }),
-                headers: {'X-CSRFToken': csrf}
-            }).then(response => {
-                if (response.ok) {
-                    window.location.reload();
-                }
-            })
-        };
-    };
-}
-
-function setDeleteButtonsEvents() {
-    let floorDeleteButtons = document.querySelectorAll(".floor-delete");
-    for(i=0; i<floorDeleteButtons.length; i++) {
-        const button = floorDeleteButtons[i];
-        const url = "floor_manager/delete/" + button.dataset.floor
-        button.onclick = function() {
-            fetch(url, {
-                method: "POST",
-                headers: {'X-CSRFToken': csrf}
-            }).then(response => {
-                if (response.ok) {
-                    window.location.reload();
-                }
-            })
-        };
-    };
-}
-
 function hideBedTable() {
     bedTable.style.display = 'none';
 }
@@ -48,6 +9,7 @@ function showBedTable() {
 function createRow(bed) {
     var row = bedTable.insertRow(-1);
     row.id = "row"+bed.value;
+    row.setAttribute("class", "data-rows");
     row.setAttribute('data-bed-id', bed.value);
     var bedName = row.insertCell(0);
     var bedQty = row.insertCell(1);
@@ -60,7 +22,6 @@ function createRow(bed) {
 }
 
 function increaseQty(bedId) {
-    console.log(bedId)
     const row = document.querySelector("#row"+bedId);
     var qty = parseInt(row.cells[1].innerHTML);
     row.cells[1].innerHTML = qty + 1; 
@@ -70,55 +31,59 @@ function decreaseQty(bedId) {
     const row = document.querySelector("#row"+bedId);
     var qty = parseInt(row.cells[1].innerHTML);
     if (qty == 1) {
-        row.remove()
+        row.remove();
+        let rows = document.querySelectorAll(".data-rows");
+        if(rows.length === 0) {
+            hideBedTable()
+        };
     } else {
         row.cells[1].innerHTML = qty - 1; 
     }
-    
 }
 
 const csrf = document.getElementsByName("csrfmiddlewaretoken")[0].value;
 const bedList = document.querySelector('#bed-list');
 const addBedButton = document.querySelector('#add-bed-button');
 const bedTable = document.querySelector('#bed-table');
+const createForm = document.querySelector("#create-form");
+const bedInfo = document.querySelector("#bed-info");
 
 addBedButton.addEventListener("click", function(event) {
     event.preventDefault();
     var bed = bedList.options[bedList.selectedIndex]
-    
-    if (bed.value) {
+    if(document.querySelector(`#row${bed.value}`)) {
+        increaseQty(bed.value)
+    }
+    else if (bed.value) {
         createRow(bed);
         showBedTable();
-        var plusList = document.querySelectorAll(".bed-plus");
-        var minusList = document.querySelectorAll(".bed-minus");
-        for (let i=0; i<plusList.length; i++) {
-            plusList[i].addEventListener("click", function() {
-                increaseQty(bed.value)
-            });
-        }
-        for (let i=0; i<minusList.length; i++) {
-            minusList[i].addEventListener("click", function() {
-                decreaseQty(bed.value)
-            });
-        }
+        let plus = document.querySelector(`#plus${bed.value}`);
+        let minus = document.querySelector(`#minus${bed.value}`);
+        plus.addEventListener("click", function() {
+            increaseQty(bed.value)
+        });
+        minus.addEventListener("click", function() {
+            decreaseQty(bed.value)
+        });
     };
 });
 
-document.body.addEventListener('htmx:configRequest', (event) => {
-    event.detail.headers['X-CSRFToken'] = csrf;
-  })
-
-
-// reload table button events after table content loaded by htmx
-document.body.addEventListener('htmx:afterSwap', (event) => {
-    setMoveButtonsEvents();
-    setDeleteButtonsEvents();
-  })
-
-setMoveButtonsEvents();
-setDeleteButtonsEvents();
-
-
-
-
-
+createForm.addEventListener("submit", function() {
+    console.log("in submit event function")
+    let rows = document.querySelectorAll(".data-rows");
+    if(rows.length === 0) {
+        alert("Please add beds.");
+        return false;
+    }
+    // Room bed data
+    var data = {}
+    rows.forEach(function(row){
+        let bedId = row.dataset.bedId;
+        let bedQty = row.childNodes[1].innerHTML;
+        data[`${bedId}`] = bedQty;
+        
+    });
+    // Set value for hidden input element.
+    bedInfo.setAttribute('value', JSON.stringify(data));
+    return true
+});

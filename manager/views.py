@@ -276,12 +276,23 @@ class RoomTypesView(HotelOwnerMixin, View):
             'beds': beds,
         }
         return render(self.request, 'manager/room_types.html', context)
+    
+    def create_room_beds(self, bed_info, room_type):
+        for bed_id, quantity in bed_info.items():
+            bed = Bed.objects.get(id=int(bed_id))
+            room_bed = RoomBed.objects.create(room_type=room_type, bed=bed, quantity=int(quantity))
+            room_bed.save()
 
-    # def form_valid(self, form):
-    #     form.instance.hotel = self.hotel
+    def post(self, request, *args, **kwargs):
+        bed_info = json.loads(request.POST['bed_info'])
+        form = CreateRoomTypeForm(request.POST)
+        if form.is_valid():
+            room_type = form.save(commit=False)
+            room_type.hotel = self.hotel
+            room_type.save()
+            self.create_room_beds(bed_info, room_type)
+        return self.get(request)
 
-    #     form.save()
-    #     return HttpResponseRedirect(reverse_lazy('manager:room_types', kwargs={'hotel_id':self.hotel.id}))
 
 class RoomTypesEditView(HotelOwnerMixin, UpdateView):
     pass

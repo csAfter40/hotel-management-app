@@ -16,7 +16,7 @@
         <!-- Create Form -->
         
         <div class="container-sm bg-light py-2">
-            <form action="{% url 'manager:room_types' hotel.id %}">
+            <form id="create-form" action="{% url 'manager:room_types' hotel.id %}" method="POST">
                 {% csrf_token %}
                 <div class="row mb-4">
                     <div class="col">
@@ -37,7 +37,6 @@
                         </div>
                         <div class="my-3">
                             <table class="table" id="bed-table" style="display: none;">
-                                <!-- <thead class="thead-dark"> -->
                                 <thead>
                                 <tr>
                                     <th class="align-middle col-md-9" scope="col">Bed Type</th>
@@ -47,39 +46,19 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                    <!-- <tr>
-                                        <td>Bed Name</td>
-                                        <td>1</td>
-                                        <td><i class="bi bi-dash-circle"></i></td>
-                                        <td><i class="bi bi-plus-circle"></i></td>
-                                        
-                                    </tr> -->
+
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
+                <input type="hidden" id="bed-info" name="bed_info" value="">
                 <div class="row mb-4">
                     <div class="col">
                         <h3>Room Type</h3>
                         {{room_type_form.title|as_crispy_field}}
                         {{room_type_form.description|as_crispy_field}}
                         {{room_type_form.room_size|as_crispy_field}}
-                        <!-- <div class="row">
-                            <div class="col">
-                                {{room_type_form.title.as_p}}
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col">
-                                {{room_type_form.description}}
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col">
-                                {{room_type_form.room_size}}
-                            </div>
-                        </div> -->
                     </div>
                 </div>
                 <div class="row mb-4">
@@ -87,10 +66,6 @@
                         <h3>Features</h3>
                         <div class="row">
                             <div class="col">
-                                <!-- <div class="form-check">
-                                    {{room_type_form.has_air_con}}
-                                    <label class="form-check-label">{{room_type_form.has_air_con.label}}</label>
-                                </div> -->
                                 {{room_type_form.has_air_con|as_crispy_field}}
                             </div>
                             <div class="col">
@@ -122,21 +97,9 @@
             </form>
             
         </div>
-        <!-- <div class=" bg-light py-2" style="border-right: 1px solid #888; width: 250px;">
-            <div class="text-center my-2" ><h3>Create Room Type</h3></div>
-            {% if message %}
-            <div class='text-danger'>{{ message }}</div>
-            {% endif %}
-            <form action="{% url 'manager:room_types' hotel.id %}" method="post" class="px-3 ">
-                {% csrf_token %}
-                {{ create_room_type_form.as_p }}
-                <input type="hidden" name="id" value="{{hotel.id}}">
-                <input class="btn btn-primary" type="submit" value="Submit Room Type">
-            </form>
-        </div> -->
     {% else %}
         <!-- Update Form -->
-        <div class=" bg-light py-2" style="border-right: 1px solid #888; width: 250px;">
+        <!-- <div class=" bg-light py-2" style="border-right: 1px solid #888; width: 250px;">
             <div class="text-center my-2" ><h3>Update Room Type</h3></div>
             {% if message %}
             <div class='text-danger'>{{ message }}</div>
@@ -148,7 +111,7 @@
                 <input class="btn btn-primary" type="submit" value="Update">
                 <a href="{% url 'manager:room_types' hotel.id %}" class="btn btn-danger">Cancel</a>
             </form>
-        </div>
+        </div> -->
     {% endif %}
 
     {% if not room_types %}
@@ -159,7 +122,7 @@
         </div>
     
     {% else %}
-        <!-- Floors table -->
+        <!-- Room types table -->
         {% include 'manager/table_room_types.html' with room_types=room_types hotel=hotel %}
         
     {% endif %}

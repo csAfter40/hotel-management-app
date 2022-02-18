@@ -91,7 +91,7 @@ class RoomBed(models.Model):
     quantity = models.PositiveSmallIntegerField()
 
     def __str__(self):
-        return f'{self.quantity} x {self.name}'
+        return f'{self.quantity} x {self.bed}'
 
 
 class Room(models.Model):
@@ -108,7 +108,7 @@ class Room(models.Model):
     floor = models.ForeignKey(Floor, null=True, on_delete=models.SET_NULL)
     room_type = models.ForeignKey(RoomType, null=True, on_delete=models.SET_NULL)
     room_name = models.CharField(max_length=16)
-    vacansy = models.CharField(max_length=1, choices=vacancy_choices)
+    vacancy = models.CharField(max_length=1, choices=vacancy_choices)
     cleaning_status = models.CharField(max_length=1, choices=cleaning_status_choices)
     
     def __str__(self):
