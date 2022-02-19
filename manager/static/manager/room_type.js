@@ -112,9 +112,13 @@ cancelBedButton.addEventListener('click', function(event) {
     hideCreateBedForm();
 })
 
-createBedButton.addEventListener('htmx:configRequest', (event) => {
+// createBedButton.addEventListener('htmx:configRequest', (event) => {
+//     event.detail.headers['X-CSRFToken'] = csrf;
+// })
+
+document.body.addEventListener('htmx:configRequest', (event) => {
     event.detail.headers['X-CSRFToken'] = csrf;
-})
+});
 
 createBedButton.addEventListener('htmx:afterOnLoad', (event) => {
     hideCreateBedForm();
