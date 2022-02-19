@@ -340,6 +340,21 @@ def floor_delete(request, *args, **kwargs):
     }
     return render(request, 'manager/table_floors.html', context)
 
+def create_bed(request, hotel_id):
+    hotel = Hotel.objects.get(id=hotel_id)
+    if request.method == 'POST':
+        form = BedForm(request.POST)
+        if form.is_valid():
+            bed = form.save(commit=False)
+            bed.hotel = hotel
+            bed.save()
+            context = {
+                'room_bed_form': RoomBedForm()
+            }
+            return render(request, 'manager/input_beds.html', context, status=200)
+        else:
+            return JsonResponse({"errors": form.errors}, status=400)
+
 def room_type_delete(request, *args, **kwargs):
     pass
 

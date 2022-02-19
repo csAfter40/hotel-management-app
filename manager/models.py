@@ -84,9 +84,16 @@ class RoomType(models.Model):
     def __str__(self):
         return self.title
 
+    def get_capacity(self):
+        capacity = 0
+        room_beds = self.room_beds.all()
+        for room_bed in room_beds:
+            capacity += room_bed.bed.capacity * room_bed.quantity
+        return capacity
+
 
 class RoomBed(models.Model):
-    room_type = models.ForeignKey(RoomType, on_delete=models.CASCADE)
+    room_type = models.ForeignKey(RoomType, on_delete=models.CASCADE, related_name='room_beds')
     bed = models.ForeignKey(Bed, on_delete=models.CASCADE)
     quantity = models.PositiveSmallIntegerField()
 

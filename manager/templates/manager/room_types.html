@@ -16,25 +16,49 @@
         <!-- Create Form -->
         
         <div class="container-sm bg-light py-2">
-            <form id="create-form" action="{% url 'manager:room_types' hotel.id %}" method="POST">
-                {% csrf_token %}
+            <!-- <form id="create-form" action="{% url 'manager:room_types' hotel.id %}" method="POST">
+                {% csrf_token %} -->
                 <div class="row mb-4">
                     <div class="col">
                         <h3>Bed</h3>
-                        <div class="row">
-                            <div class="col">
-                                {{room_bed_form.bed|as_crispy_field}}
-                            </div>
-                        </div>
                         
-                        <div class="row">
+                        {% include 'manager/input_beds.html' %}
+                        
+                        
+                        <div class="row mb-4">
                             <div class="col">
                                 <button class="btn btn-primary btn-block" id="add-bed-button">Add to Room List</button>
                             </div>
                             <div class="col">
-                                <button class="btn btn-primary btn-block">Create New Bed</button>
+                                <button class="btn btn-primary btn-block" id="create-new-bed-btn">Create New Bed</button>
                             </div>
                         </div>
+                        <div id="create-bed-form" style="display: none;">
+                            <form action="{% url 'manager:create_bed' hotel.id%}">
+                                <div class="row mb-4">
+                                    <div class="col">
+                                        <h3>Create Custom Bed</h3>
+                                        {{ bed_form|crispy }}
+                                    </div>
+                                </div>
+                                <div class="row mb-4">
+                                    <div class="col">
+                                        <button class="btn btn-primary btn-block" 
+                                                id="create-bed-btn" 
+                                                hx-post="{% url 'manager:create_bed' hotel.id %}"
+                                                hx-target="#create-bed-form-div"
+                                                hx-trigger="click"
+                                                hx-swap="outerHTML">
+                                            Create Bed
+                                        </button>
+                                    </div>
+                                    <div class="col">
+                                        <button class="btn btn-danger btn-block" id="cancel-bed-btn">Cancel</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        
                         <div class="my-3">
                             <table class="table" id="bed-table" style="display: none;">
                                 <thead>
@@ -52,6 +76,8 @@
                         </div>
                     </div>
                 </div>
+            <form id="create-form" action="{% url 'manager:room_types' hotel.id %}" method="POST">
+                {% csrf_token %}
                 <input type="hidden" id="bed-info" name="bed_info" value="">
                 <div class="row mb-4">
                     <div class="col">

@@ -24,6 +24,7 @@ urlpatterns = [
 htmx_urlpatterns = [
     path('<int:hotel_id>/floor_manager/del/<int:pk>', views.floor_delete, name='floor_delete'),
     path('<int:hotel_id>/room_types/del/<int:pk>', views.room_type_delete, name='room_type_delete'),
+    path('<int:hotel_id>/create_bed', views.create_bed, name='create_bed'),
 ]
 
 urlpatterns += htmx_urlpatterns

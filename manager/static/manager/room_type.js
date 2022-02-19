@@ -41,12 +41,24 @@ function decreaseQty(bedId) {
     }
 }
 
+function showCreateBedForm(){
+    createBedForm.style.display = 'block'
+}
+
+function hideCreateBedForm(){
+    createBedForm.style.display = 'none'
+}
+
 const csrf = document.getElementsByName("csrfmiddlewaretoken")[0].value;
 const bedList = document.querySelector('#bed-list');
 const addBedButton = document.querySelector('#add-bed-button');
+const createNewBedButton = document.querySelector('#create-new-bed-btn');
+const createBedButton = document.querySelector('#create-bed-btn');
+const cancelBedButton = document.querySelector('#cancel-bed-btn');
 const bedTable = document.querySelector('#bed-table');
 const createForm = document.querySelector("#create-form");
 const bedInfo = document.querySelector("#bed-info");
+const createBedForm = document.querySelector('#create-bed-form');
 
 addBedButton.addEventListener("click", function(event) {
     event.preventDefault();
@@ -87,3 +99,21 @@ createForm.addEventListener("submit", function() {
     bedInfo.setAttribute('value', JSON.stringify(data));
     return true
 });
+
+createNewBedButton.addEventListener('click', function(event) {
+    event.preventDefault();
+    showCreateBedForm();
+});
+
+cancelBedButton.addEventListener('click', function(event) {
+    event.preventDefault();
+    hideCreateBedForm();
+})
+
+createBedButton.addEventListener('htmx:configRequest', (event) => {
+    event.detail.headers['X-CSRFToken'] = csrf;
+})
+
+createBedButton.addEventListener('htmx:afterOnLoad', (event) => {
+    hideCreateBedForm();
+})
