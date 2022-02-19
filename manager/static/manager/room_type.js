@@ -59,6 +59,8 @@ const bedTable = document.querySelector('#bed-table');
 const createForm = document.querySelector("#create-form");
 const bedInfo = document.querySelector("#bed-info");
 const createBedForm = document.querySelector('#create-bed-form');
+const plusButtons = document.querySelectorAll('.bed-plus');
+const minusButtons = document.querySelectorAll('.bed-minus');
 
 addBedButton.addEventListener("click", function(event) {
     event.preventDefault();
@@ -91,7 +93,7 @@ createForm.addEventListener("submit", function() {
     var data = {}
     rows.forEach(function(row){
         let bedId = row.dataset.bedId;
-        let bedQty = row.childNodes[1].innerHTML;
+        let bedQty = row.children[1].innerHTML;
         data[`${bedId}`] = bedQty;
         
     });
@@ -116,4 +118,16 @@ createBedButton.addEventListener('htmx:configRequest', (event) => {
 
 createBedButton.addEventListener('htmx:afterOnLoad', (event) => {
     hideCreateBedForm();
+})
+
+plusButtons.forEach(plusButton => {
+    plusButton.addEventListener('click', function() {
+        increaseQty(plusButton.dataset.bedId);
+    });
+})
+
+minusButtons.forEach(minusButton => {
+    minusButton.addEventListener('click', function() {
+        decreaseQty(minusButton.dataset.bedId);
+    });
 })

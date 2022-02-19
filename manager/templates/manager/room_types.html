@@ -125,19 +125,117 @@
         </div>
     {% else %}
         <!-- Update Form -->
-        <!-- <div class=" bg-light py-2" style="border-right: 1px solid #888; width: 250px;">
-            <div class="text-center my-2" ><h3>Update Room Type</h3></div>
-            {% if message %}
-            <div class='text-danger'>{{ message }}</div>
-            {% endif %}
-            <form action="{% url 'manager:room_type_edit' hotel_id=hotel.id pk=room_type.id %}" method="post" class="px-3 ">
+        
+        <div class="container-sm bg-light py-2">
+                <div class="row mb-4">
+                    <div class="col">
+                        <h3>Bed</h3>
+                        {% include 'manager/input_beds.html' %}
+                        <div class="row mb-4">
+                            <div class="col">
+                                <button class="btn btn-primary btn-block" id="add-bed-button">Add to Room List</button>
+                            </div>
+                            <div class="col">
+                                <button class="btn btn-primary btn-block" id="create-new-bed-btn">Create New Bed</button>
+                            </div>
+                        </div>
+                        <div id="create-bed-form" style="display: none;">
+                            <form action="{% url 'manager:create_bed' hotel.id%}">
+                                <div class="row mb-4">
+                                    <div class="col">
+                                        <h3>Create Custom Bed</h3>
+                                        {{ bed_form|crispy }}
+                                    </div>
+                                </div>
+                                <div class="row mb-4">
+                                    <div class="col">
+                                        <button class="btn btn-primary btn-block" 
+                                                id="create-bed-btn" 
+                                                hx-post="{% url 'manager:create_bed' hotel.id %}"
+                                                hx-target="#create-bed-form-div"
+                                                hx-trigger="click"
+                                                hx-swap="outerHTML">
+                                            Create Bed
+                                        </button>
+                                    </div>
+                                    <div class="col">
+                                        <button class="btn btn-danger btn-block" id="cancel-bed-btn">Cancel</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <div class="my-3">
+                            <table class="table" id="bed-table" style="display: block;">
+                                <thead>
+                                <tr>
+                                    <th class="align-middle col-md-9" scope="col">Bed Type</th>
+                                    <th class="align-middle text-center col-md-1" scope="col">Qty</th>
+                                    <th class="align-middle text-center col-md-1" scope="col"></th>
+                                    <th class="align-middle text-center col-md-1" scope="col"></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                    {% for room_bed in room_beds %}
+                                        <tr id="row{{room_bed.bed.id}}" class="data-rows" data-bed-id="{{room_bed.bed.id}}">
+                                            <td>{{room_bed.bed}}</td>
+                                            <td>{{room_bed.quantity}}</td>
+                                            <td><i id="minus2" data-bed-id="{{room_bed.bed.id}}" class="bi bi-dash-circle bed-minus"></i></td>
+                                            <td><i id="plus2" data-bed-id="{{room_bed.bed.id}}" class="bi bi-plus-circle bed-plus"></i></td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            <form id="create-form" action="{% url 'manager:room_types_edit' hotel.id room_type.id %}" method="POST">
                 {% csrf_token %}
-                {{ create_room_type_form.as_p }}
-                <input type="hidden" name="id" value="{{hotel.id}}">
-                <input class="btn btn-primary" type="submit" value="Update">
-                <a href="{% url 'manager:room_types' hotel.id %}" class="btn btn-danger">Cancel</a>
+                <input type="hidden" id="bed-info" name="bed_info" value="">
+                <div class="row mb-4">
+                    <div class="col">
+                        <h3>Room Type</h3>
+                        {{room_type_form.title|as_crispy_field}}
+                        {{room_type_form.description|as_crispy_field}}
+                        {{room_type_form.room_size|as_crispy_field}}
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col">
+                        <h3>Features</h3>
+                        <div class="row">
+                            <div class="col">
+                                {{room_type_form.has_air_con|as_crispy_field}}
+                            </div>
+                            <div class="col">
+                                    {{room_type_form.has_wifi|as_crispy_field}}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                    {{room_type_form.has_tv|as_crispy_field}}
+                            </div>
+                            <div class="col">
+                                    {{room_type_form.has_fridge|as_crispy_field}}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                    {{room_type_form.has_hot_water|as_crispy_field}}
+                            </div>
+                            <div class="col">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <input type="submit" value="Update Room Type" class="btn btn-primary btn-block" >
+                    </div>
+                </div>
             </form>
-        </div> -->
+            
+        </div>
     {% endif %}
 
     {% if not room_types %}

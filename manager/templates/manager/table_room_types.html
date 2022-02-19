@@ -20,7 +20,7 @@
                     <td>{{ room_type.description }}</td>
                     <td>{{room_type.get_capacity}}</td>
                     <td style="text-align: center;" class="align-middle">
-                        <a href="{% url 'manager:room_type_edit' hotel_id=hotel.id pk=room_type.id %}"><i class="bi bi-pencil-square"></i></a>
+                        <a href="{% url 'manager:room_types_edit' hotel_id=hotel.id pk=room_type.id %}"><i class="bi bi-pencil-square"></i></a>
                     </td>
                     <!-- TODO -->
                     <td style="text-align: center;" class="align-middle">

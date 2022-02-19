@@ -212,39 +212,39 @@ class FloorMoveView(HotelOwnerMixin, View):
         return JsonResponse({}, status=400)
 
 
-class RoomTypesView1(HotelOwnerMixin, CreateView):
-    form_class = CreateRoomTypeForm
+# class RoomTypesView1(HotelOwnerMixin, CreateView):
+#     form_class = CreateRoomTypeForm
 
-    def setup(self, request, *args, **kwargs):
-        """Initialize attributes shared by all view methods."""
-        if hasattr(self, 'get') and not hasattr(self, 'head'):
-            self.head = self.get
-        self.request = request
-        self.args = args
-        self.kwargs = kwargs
-        id = kwargs['hotel_id']
-        self.hotel = Hotel.objects.get(id=id)
-        self.beds = kwargs['beds']
+#     def setup(self, request, *args, **kwargs):
+#         """Initialize attributes shared by all view methods."""
+#         if hasattr(self, 'get') and not hasattr(self, 'head'):
+#             self.head = self.get
+#         self.request = request
+#         self.args = args
+#         self.kwargs = kwargs
+#         id = kwargs['hotel_id']
+#         self.hotel = Hotel.objects.get(id=id)
+#         self.beds = kwargs['beds']
 
-    def get(self, request, *args, **kwargs):
-        beds = Bed.objects.filter(is_general=True).filter(hotel=self.hotel)
-        room_beds = RoomBed.objects.all()
-        room_types = RoomType.objects.filter(hotel=self.hotel)
-        context = {
-            'create': True,
-            'hotel': self.hotel,
-            'create_room_type_form': self.form_class,
-            'room_types': room_types,
-            'beds': beds,
-            'room_beds': room_beds
-        }
-        return render(self.request, 'manager/room_types.html', context)
+#     def get(self, request, *args, **kwargs):
+#         beds = Bed.objects.filter(is_general=True).filter(hotel=self.hotel)
+#         room_beds = RoomBed.objects.all()
+#         room_types = RoomType.objects.filter(hotel=self.hotel)
+#         context = {
+#             'create': True,
+#             'hotel': self.hotel,
+#             'create_room_type_form': self.form_class,
+#             'room_types': room_types,
+#             'beds': beds,
+#             'room_beds': room_beds
+#         }
+#         return render(self.request, 'manager/room_types.html', context)
 
-    def form_valid(self, form):
-        form.instance.hotel = self.hotel
+#     def form_valid(self, form):
+#         form.instance.hotel = self.hotel
 
-        form.save()
-        return HttpResponseRedirect(reverse_lazy('manager:room_types', kwargs={'hotel_id':self.hotel.id}))
+#         form.save()
+#         return HttpResponseRedirect(reverse_lazy('manager:room_types', kwargs={'hotel_id':self.hotel.id}))
 
 
 class RoomTypesView(HotelOwnerMixin, View):
@@ -295,8 +295,74 @@ class RoomTypesView(HotelOwnerMixin, View):
 
 
 class RoomTypesEditView(HotelOwnerMixin, UpdateView):
-    pass
 
+    model = RoomType
+    form_class = CreateRoomTypeForm
+    
+    
+    def setup(self, request, *args, **kwargs):
+        """Initialize attributes shared by all view methods."""
+        if hasattr(self, 'get') and not hasattr(self, 'head'):
+            self.head = self.get
+        self.request = request
+        self.args = args
+        self.kwargs = kwargs
+        pk = kwargs['pk']
+        self.room_type = RoomType.objects.get(id=pk)
+        self.hotel = self.room_type.hotel
+        self.success_url = reverse_lazy('manager:room_types', kwargs={'hotel_id':self.hotel.id})
+        self.room_type_form = CreateRoomTypeForm
+        self.bed_form = BedForm()
+        self.room_bed_form = RoomBedForm()
+        self.room_beds = self.room_type.room_beds.all()
+        if request.method == 'POST':
+            self.bed_info = json.loads(request.POST['bed_info'])
+
+    def get(self, request, *args, **kwargs):
+        beds = Bed.objects.filter(is_general=True).filter(hotel=self.hotel)
+        room_types = RoomType.objects.filter(hotel=self.hotel)
+        context = {
+            'create': False,
+            'hotel': self.hotel,
+            'room_type_form': self.room_type_form(instance=self.room_type),
+            'room_type': self.room_type,
+            'bed_form': self.bed_form,
+            'room_bed_form': self.room_bed_form,
+            'room_types': room_types,
+            'beds': beds,
+            'room_beds': self.room_beds,
+        }
+        return render(self.request, 'manager/room_types.html', context)
+
+    def update_room_beds(self):
+        # remove deleted room beds
+        delete_list = []
+        print(list(self.bed_info.keys()))
+        for room_bed in self.room_beds:
+            if str(room_bed.bed.id) not in list(self.bed_info.keys()):
+                delete_list.append(room_bed.id)
+        print(delete_list)
+        if delete_list:
+            for id in delete_list:
+                RoomBed.objects.filter(id=id).delete()
+
+        # modify room beds or create new room beds
+        for bed_id, quantity in self.bed_info.items():
+            bed = Bed.objects.get(id=int(bed_id))
+            room_beds = RoomBed.objects.filter(room_type=self.room_type, bed=bed)
+            if len(room_beds) > 0:
+                room_bed = room_beds[0]
+                room_bed.quantity = int(quantity)
+                room_bed.save()
+            else:
+                room_bed = RoomBed.objects.create(room_type=self.room_type, bed=bed, quantity=int(quantity))
+    
+    def form_valid(self, form):
+        """If the form is valid, save the associated model."""
+        self.update_room_beds()
+        self.object = form.save()
+        return super().form_valid(form)
+        
 
 class RoomTypesDeleteView(HotelOwnerMixin, DeleteView):
     pass
