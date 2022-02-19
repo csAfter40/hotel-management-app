@@ -4,13 +4,15 @@ from django.views.generic.base import View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from .models import Floor, Hotel, Owner, RoomType, Bed, RoomBed
 from .forms import OwnerRegisterForm, HotelCreateForm, CreateFloorForm, CreateRoomTypeForm, BedForm, RoomBedForm
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .mixins import HotelOwnerMixin, IsManagerMixin, OwnerCheckMixin
 from django.db.utils import IntegrityError
 from django.contrib.auth.models import Group
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.exceptions import PermissionDenied
 import json
+from functools import wraps
 
 class OwnerRegister(LoginRequiredMixin, CreateView):
     model = Owner
@@ -212,41 +214,6 @@ class FloorMoveView(HotelOwnerMixin, View):
         return JsonResponse({}, status=400)
 
 
-# class RoomTypesView1(HotelOwnerMixin, CreateView):
-#     form_class = CreateRoomTypeForm
-
-#     def setup(self, request, *args, **kwargs):
-#         """Initialize attributes shared by all view methods."""
-#         if hasattr(self, 'get') and not hasattr(self, 'head'):
-#             self.head = self.get
-#         self.request = request
-#         self.args = args
-#         self.kwargs = kwargs
-#         id = kwargs['hotel_id']
-#         self.hotel = Hotel.objects.get(id=id)
-#         self.beds = kwargs['beds']
-
-#     def get(self, request, *args, **kwargs):
-#         beds = Bed.objects.filter(is_general=True).filter(hotel=self.hotel)
-#         room_beds = RoomBed.objects.all()
-#         room_types = RoomType.objects.filter(hotel=self.hotel)
-#         context = {
-#             'create': True,
-#             'hotel': self.hotel,
-#             'create_room_type_form': self.form_class,
-#             'room_types': room_types,
-#             'beds': beds,
-#             'room_beds': room_beds
-#         }
-#         return render(self.request, 'manager/room_types.html', context)
-
-#     def form_valid(self, form):
-#         form.instance.hotel = self.hotel
-
-#         form.save()
-#         return HttpResponseRedirect(reverse_lazy('manager:room_types', kwargs={'hotel_id':self.hotel.id}))
-
-
 class RoomTypesView(HotelOwnerMixin, View):
     form_class = CreateRoomTypeForm
 
@@ -364,12 +331,6 @@ class RoomTypesEditView(HotelOwnerMixin, UpdateView):
         return super().form_valid(form)
         
 
-class RoomTypesDeleteView(HotelOwnerMixin, DeleteView):
-    pass
-
-
-
-
 class RoomManagerView(HotelOwnerMixin, View):
 
     def get(self, request, *args, **kwargs):
@@ -381,6 +342,22 @@ class RoomManagerView(HotelOwnerMixin, View):
         return render(request, 'manager/room_manager.html', context)
 
 
+def hotel_owner_check(function):
+    """ Owner checking decorator. Checks if user is owner of the hotel. """
+    @wraps(function)
+    def wrap(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return render(request, 'main/login.html')
+        if not hasattr(request.user, 'owner'):
+            return HttpResponseRedirect(reverse('main:index'))
+        hotel_id = kwargs['hotel_id']
+        hotel = Hotel.objects.get(id=hotel_id)
+        if not hotel in request.user.owner.hotel_set.all():
+            raise PermissionDenied
+        return function(request, *args, **kwargs)
+    return wrap
+
+@hotel_owner_check
 def floor_delete(request, *args, **kwargs):
 
     def edit_sort_ids(hotel, sort_id):
@@ -393,19 +370,21 @@ def floor_delete(request, *args, **kwargs):
                 floor.sort_id -= 1
                 floor.save()
     
-    floor_id = kwargs['pk']
-    floor = Floor.objects.get(id=floor_id)
-    hotel = floor.hotel
-    sort_id = floor.sort_id
-    floor.delete()
-    edit_sort_ids(hotel, sort_id)
-    floors = hotel.floors.order_by('sort_id')
-    context = {
-        'floors': floors,
-        'hotel': hotel
-    }
-    return render(request, 'manager/table_floors.html', context)
+    if request.method == 'POST':
+        floor_id = kwargs['pk']
+        floor = Floor.objects.get(id=floor_id)
+        hotel = floor.hotel
+        sort_id = floor.sort_id
+        floor.delete()
+        edit_sort_ids(hotel, sort_id)
+        floors = hotel.floors.order_by('sort_id')
+        context = {
+            'floors': floors,
+            'hotel': hotel
+        }
+        return render(request, 'manager/table_floors.html', context)
 
+@hotel_owner_check
 def create_bed(request, hotel_id):
     hotel = Hotel.objects.get(id=hotel_id)
     if request.method == 'POST':
@@ -421,8 +400,20 @@ def create_bed(request, hotel_id):
         else:
             return JsonResponse({"errors": form.errors}, status=400)
 
+@hotel_owner_check
 def room_type_delete(request, *args, **kwargs):
-    pass
+    if request.method == 'POST':
+        room_type_id = kwargs['pk']
+        hotel_id = kwargs['hotel_id']
+        hotel = Hotel.objects.get(id=hotel_id)
+        room_type = RoomType.objects.get(id=room_type_id)
+        room_type.delete()
+        room_types = RoomType.objects.filter(hotel=hotel)
+        context = {
+           'room_types': room_types,
+           'hotel': hotel
+        }
+        return render(request, 'manager/table_room_types.html', context)
 
 
 def detail_hotel(request, id):
