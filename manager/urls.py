@@ -14,6 +14,7 @@ urlpatterns = [
     path('<int:hotel_id>/floor_manager/edit/<pk>', views.FloorEditView.as_view(), name='floor_edit'),
     path('<int:hotel_id>/floor_manager/floor_move', views.FloorMoveView.as_view(), name='floor_move'),
     path('<int:hotel_id>/room_manager', views.RoomManagerView.as_view(), name='room_manager'),
+    path('<int:hotel_id>/room_manager/edit/<pk>', views.RoomEditView.as_view(), name='room_edit'),
     path('<int:hotel_id>/room_types', views.RoomTypesView.as_view(), name='room_types'),
     path('<int:hotel_id>/room_types/edit/<pk>', views.RoomTypesEditView.as_view(), name='room_types_edit'),
     path('add_employee', views.add_employee, name='add_employee'),

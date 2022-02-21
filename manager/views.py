@@ -1,9 +1,11 @@
+from email import message
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.views.generic.base import View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from .models import Floor, Hotel, Owner, RoomType, Bed, RoomBed
-from .forms import OwnerRegisterForm, HotelCreateForm, CreateFloorForm, CreateRoomTypeForm, BedForm, RoomBedForm
+from .forms import OwnerRegisterForm, HotelCreateForm, CreateFloorForm, CreateRoomTypeForm, BedForm, RoomBedForm, CreateRoomForm
+from .decorators import hotel_owner_check
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .mixins import HotelOwnerMixin, IsManagerMixin, OwnerCheckMixin
@@ -12,7 +14,6 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.exceptions import PermissionDenied
 import json
-from functools import wraps
 
 class OwnerRegister(LoginRequiredMixin, CreateView):
     model = Owner
@@ -336,26 +337,32 @@ class RoomManagerView(HotelOwnerMixin, View):
     def get(self, request, *args, **kwargs):
         id = kwargs['hotel_id']
         hotel = Hotel.objects.get(id=id)
+        floors = Floor.objects.filter(hotel=hotel)
+        form = CreateRoomForm(hotel=hotel)
         context = {
-            'hotel': hotel
+            'create': True,
+            'hotel': hotel,
+            'floors': floors,
+            'form': form
         }
+        message = kwargs.get('message', None)
+        if message:
+            context['message'] = message
         return render(request, 'manager/room_manager.html', context)
 
+    def post(self, request, *args, **kwargs):
+        id = request.POST['id']
+        hotel = Hotel.objects.get(id=id)
+        form = CreateRoomForm(hotel, request.POST)
+        message = {}
+        if form.is_valid:
+            form.save()
+        else:
+            message['message'] = 'Problem occured creating room'
+        return self.get(request, message, *args, **kwargs)
 
-def hotel_owner_check(function):
-    """ Owner checking decorator. Checks if user is owner of the hotel. """
-    @wraps(function)
-    def wrap(request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return render(request, 'main/login.html')
-        if not hasattr(request.user, 'owner'):
-            return HttpResponseRedirect(reverse('main:index'))
-        hotel_id = kwargs['hotel_id']
-        hotel = Hotel.objects.get(id=hotel_id)
-        if not hotel in request.user.owner.hotel_set.all():
-            raise PermissionDenied
-        return function(request, *args, **kwargs)
-    return wrap
+class RoomEditView(HotelOwnerMixin, View):
+    pass
 
 @hotel_owner_check
 def floor_delete(request, *args, **kwargs):

@@ -6,8 +6,64 @@
 <h2 class="text-center m-3">{{hotel.name}} Room Manager</h2>
 
 <div class="d-flex  justify-content-center mb-5">
-    
-    
+
+    {% if create %}
+        <!-- Create Form -->
+        <div class=" bg-light py-2" style="border-right: 1px solid #888; width: 250px;">
+            <div class="text-center my-2" ><h3>Create Room</h3></div>
+            {% if message %}
+            <div class='text-danger'>{{ message }}</div>
+            {% endif %}
+            <form action="{% url 'manager:room_manager' hotel.id %}" method="post" class="px-3 ">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <input type="hidden" name="id" value="{{hotel.id}}">
+                <input class="btn btn-primary" type="submit" value="Submit Room">
+            </form>
+        </div>
+    {% else %}
+        <!-- Update Form -->
+        <div class=" bg-light py-2" style="border-right: 1px solid #888; width: 250px;">
+            <div class="text-center my-2" ><h3>Update Room</h3></div>
+            {% if message %}
+            <div class='text-danger'>{{ message }}</div>
+            {% endif %}
+            <form action="{% url 'manager:room_edit' hotel_id=hotel.id pk=room.id %}" method="post" class="px-3 ">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <input type="hidden" name="id" value="{{hotel.id}}">
+                <input class="btn btn-primary" type="submit" value="Update">
+                <a href="{% url 'manager:room_manager' hotel.id %}" class="btn btn-danger">Cancel</a>
+            </form>
+        </div>
+    {% endif %}
+
+    <div class="container bg-light mx-0">
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            {% for floor in floors %}
+                <li class="nav-item" role="presentation">
+                    {% if forloop.counter == 1 %}
+                    <button class="nav-link active" id="{{floor.id}}-tab" data-bs-toggle="tab" data-bs-target="#floor-{{floor.id}}" type="button" role="tab" aria-controls="floor{{floor.id}}" aria-selected="true">{{floor}}</button>
+                    {% else %}
+                    <button class="nav-link " id="{{floor.id}}-tab" data-bs-toggle="tab" data-bs-target="#floor-{{floor.id}}" type="button" role="tab" aria-controls="floor{{floor.id}}" aria-selected="false">{{floor}}</button>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+        <div class="tab-content" id="myTabContent">
+            {% for floor in floors %}
+                {% if forloop.counter == 1 %}
+                    <div class="tab-pane fade show active" id="floor-{{floor.id}}" role="tabpanel" aria-labelledby="{{floor.id}}-tab">
+                        <p>{{floor}} content</p>
+                    </div>        
+                {% else %}
+                    <div class="tab-pane fade" id="floor-{{floor.id}}" role="tabpanel" aria-labelledby="{{floor.id}}-tab">
+                        <p>{{floor}} content</p>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
 </div>
 {% endblock %}
 {% block script %}

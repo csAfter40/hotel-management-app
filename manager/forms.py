@@ -1,5 +1,5 @@
 from django import forms
-from .models import Owner, Hotel, Floor, RoomType, Bed, RoomBed
+from .models import Owner, Hotel, Floor, RoomType, Bed, RoomBed, Room
 
 class DateInput(forms.DateInput):
     input_type = 'date'
@@ -102,4 +102,19 @@ class RoomBedForm(forms.ModelForm):
         widgets = {
             'bed': forms.Select(attrs={'class': 'form-control', 'id': 'bed-list'}),
             'quantity': forms.NumberInput(attrs={'class': 'form-control'})
+        }
+
+class CreateRoomForm(forms.ModelForm):
+    def __init__(self, hotel, *args, **kwargs):
+        super (CreateRoomForm, self ).__init__(*args, **kwargs) # populates the post
+        self.fields['floor'].queryset = Floor.objects.filter(hotel=hotel)
+        self.fields['room_type'].queryset = RoomType.objects.filter(hotel=hotel)
+
+    class Meta:
+        model = Room
+        exclude = ['vacancy', 'cleaning_status']
+        widgets = {
+            'floor': forms.Select(attrs={'class': 'form-control'}),
+            'room_type': forms.Select(attrs={'class': 'form-control'}),
+            'room_name': forms.TextInput(attrs={'class': 'form-control'})
         }

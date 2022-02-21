@@ -112,11 +112,11 @@ class Room(models.Model):
         ('D', 'Dirty'),
     ]
 
-    floor = models.ForeignKey(Floor, null=True, on_delete=models.SET_NULL)
-    room_type = models.ForeignKey(RoomType, null=True, on_delete=models.SET_NULL)
+    floor = models.ForeignKey(Floor, null=True, on_delete=models.SET_NULL, related_name='rooms')
+    room_type = models.ForeignKey(RoomType, null=True, on_delete=models.SET_NULL, related_name='rooms')
     room_name = models.CharField(max_length=16)
-    vacancy = models.CharField(max_length=1, choices=vacancy_choices)
-    cleaning_status = models.CharField(max_length=1, choices=cleaning_status_choices)
+    vacancy = models.CharField(max_length=1, choices=vacancy_choices, default='V')
+    cleaning_status = models.CharField(max_length=1, choices=cleaning_status_choices, default='C')
     
     def __str__(self):
         return self.room_name
