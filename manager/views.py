@@ -422,6 +422,9 @@ def room_type_delete(request, *args, **kwargs):
         }
         return render(request, 'manager/table_room_types.html', context)
 
+@hotel_owner_check
+def room_delete(request, *args, **kwargs):
+    pass
 
 def detail_hotel(request, id):
     pass

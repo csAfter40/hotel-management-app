@@ -54,11 +54,11 @@
             {% for floor in floors %}
                 {% if forloop.counter == 1 %}
                     <div class="tab-pane fade show active" id="floor-{{floor.id}}" role="tabpanel" aria-labelledby="{{floor.id}}-tab">
-                        <p>{{floor}} content</p>
+                        {% include 'manager/table_rooms.html' with rooms=floor.rooms.all %}
                     </div>        
                 {% else %}
                     <div class="tab-pane fade" id="floor-{{floor.id}}" role="tabpanel" aria-labelledby="{{floor.id}}-tab">
-                        <p>{{floor}} content</p>
+                        {% include 'manager/table_rooms.html' with rooms=floor.rooms.all %}
                     </div>
                 {% endif %}
             {% endfor %}

@@ -1,0 +1,50 @@
+<!-- uses hotel object and floors queryset -->
+{% load static %}
+<div class="container-fluid bg-light w-100 p-3 animate-table" id="table_rooms_div">
+    <table class="table">
+        <thead class="thead-dark">
+        <tr>
+            <th class="align-middle col-md-1" scope="col">#</th>
+            <th class="align-middle col-md-2" scope="col">Name</th>
+            <th class="align-middle col-md-3" scope="col">Type</th>
+            <th class="align-middle col-md-3" scope="col">Floor</th>
+            <th class="align-middle text-center col-md-1" scope="col">Move <br> Up/Down</th>
+            <th class="align-middle text-center col-md-1" scope="col">Edit</th>
+            <th class="align-middle text-center col-md-1" scope="col">Delete</th>
+        </tr>
+        </thead>
+        <tbody>
+            {% for room in rooms %}
+                <tr>
+                    <th scope="row">{{forloop.counter}}</th>
+                    <td>{{ room.room_name }}</td>
+                    <td>{{ room.room_type }}</td>
+                    <td>{{ room.floor }}</td>
+
+                    <td style="text-align: center;">
+                        <div>
+                            <a href="javascript:void(0);"><i data-room="{{room.id}}" data-direction="up" class="bi bi-caret-up room-move"></i></a>
+                        </div>
+                        <div>
+                            <a href="javascript:void(0);"><i data-floor="{{room.id}}" data-direction="down" class="bi bi-caret-down room-move"></i></a>
+                        </div>
+                    </td>
+                    <td style="text-align: center;" class="align-middle">
+                        <a href="{% url 'manager:room_edit' hotel_id=hotel.id pk=room.id %}"><i class="bi bi-pencil-square"></i></a>
+                    </td>
+                    <td style="text-align: center;" class="align-middle">
+                        <a href="javascript:void(0);">
+                            <i data-room="{{room.id}}" 
+                                class="bi bi-trash" 
+                                hx-post="room_manager/del/{{room.id}}" 
+                                hx-target="#table_rooms_div" 
+                                hx-trigger="click" 
+                                hx-swap="outerHTML swap:100ms"
+                                hx-confirm="Are you sure you want to delete the room?"></i>
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
