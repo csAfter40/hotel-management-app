@@ -1,6 +1,6 @@
-<!-- uses hotel object and floors queryset -->
+<!-- uses hotel object, floor object and rooms queryset -->
 {% load static %}
-<div class="container-fluid bg-light w-100 p-3 animate-table" id="table_rooms_div">
+<div class="container-fluid bg-light w-100 p-3 animate-table" id="floor_{{floor.id}}_rooms_div">
     <table class="table">
         <thead class="thead-dark">
         <tr>
@@ -37,7 +37,7 @@
                             <i data-room="{{room.id}}" 
                                 class="bi bi-trash" 
                                 hx-post="room_manager/del/{{room.id}}" 
-                                hx-target="#table_rooms_div" 
+                                hx-target="#floor_{{floor.id}}_rooms_div" 
                                 hx-trigger="click" 
                                 hx-swap="outerHTML swap:100ms"
                                 hx-confirm="Are you sure you want to delete the room?"></i>

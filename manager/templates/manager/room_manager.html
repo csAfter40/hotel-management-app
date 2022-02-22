@@ -58,7 +58,7 @@
                     </div>        
                 {% else %}
                     <div class="tab-pane fade" id="floor-{{floor.id}}" role="tabpanel" aria-labelledby="{{floor.id}}-tab">
-                        {% include 'manager/table_rooms.html' with rooms=floor.rooms.all %}
+                        {% include 'manager/table_rooms.html' with rooms=floor.rooms.all floor=floor %}
                     </div>
                 {% endif %}
             {% endfor %}
@@ -67,5 +67,5 @@
 </div>
 {% endblock %}
 {% block script %}
-<!-- <script src="{% static 'manager/floor_manager.js' %}"></script> -->
+<script src="{% static 'manager/room_manager.js' %}"></script>
 {% endblock %}

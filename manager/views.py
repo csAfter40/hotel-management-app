@@ -3,7 +3,7 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.views.generic.base import View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from .models import Floor, Hotel, Owner, RoomType, Bed, RoomBed
+from .models import Floor, Hotel, Owner, RoomType, Bed, RoomBed, Room
 from .forms import OwnerRegisterForm, HotelCreateForm, CreateFloorForm, CreateRoomTypeForm, BedForm, RoomBedForm, CreateRoomForm
 from .decorators import hotel_owner_check
 from django.urls import reverse_lazy, reverse
@@ -424,7 +424,22 @@ def room_type_delete(request, *args, **kwargs):
 
 @hotel_owner_check
 def room_delete(request, *args, **kwargs):
-    pass
+    id = kwargs['pk']
+    room = Room.objects.get(id=id)
+    if request.method == 'POST':
+        floor = room.floor
+        hotel = floor.hotel
+        room.delete()
+        rooms = Room.objects.filter(floor=floor)
+        context = {
+            'hotel': hotel,
+            'rooms': rooms,
+            'floor': floor
+        }
+        return render(request, 'manager/table_rooms.html', context)
+    else:
+        return JsonResponse({"errors": f"Can't delete room {room.room_name}"}, status=400)
+
 
 def detail_hotel(request, id):
     pass
