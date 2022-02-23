@@ -112,9 +112,9 @@ class CreateRoomForm(forms.ModelForm):
 
     class Meta:
         model = Room
-        exclude = ['vacancy', 'cleaning_status']
+        exclude = ['vacancy', 'cleaning_status', 'sort_id']
         widgets = {
             'floor': forms.Select(attrs={'class': 'form-control'}),
             'room_type': forms.Select(attrs={'class': 'form-control'}),
-            'room_name': forms.TextInput(attrs={'class': 'form-control'})
+            'name': forms.TextInput(attrs={'class': 'form-control'})
         }

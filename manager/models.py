@@ -114,12 +114,17 @@ class Room(models.Model):
 
     floor = models.ForeignKey(Floor, null=True, on_delete=models.SET_NULL, related_name='rooms')
     room_type = models.ForeignKey(RoomType, null=True, on_delete=models.SET_NULL, related_name='rooms')
-    room_name = models.CharField(max_length=16)
+    name = models.CharField(max_length=16)
     vacancy = models.CharField(max_length=1, choices=vacancy_choices, default='V')
     cleaning_status = models.CharField(max_length=1, choices=cleaning_status_choices, default='C')
+    sort_id = models.SmallIntegerField(null=True, default=1)
     
     def __str__(self):
-        return self.room_name
+        return self.name
+
+    class Meta:
+        unique_together = [['sort_id', 'floor'], ['name', 'floor']]
+        ordering = ['sort_id']
 
 
 class Employee(models.Model):

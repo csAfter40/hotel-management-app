@@ -355,7 +355,11 @@ class RoomManagerView(HotelOwnerMixin, View):
         hotel = Hotel.objects.get(id=id)
         form = CreateRoomForm(hotel, request.POST)
         message = {}
-        if form.is_valid:
+        if form.is_valid():
+            data = form.cleaned_data
+            floor = data['floor']
+            room_count = Room.objects.filter(floor=floor).count()
+            form.instance.sort_id = room_count + 1
             form.save()
         else:
             message['message'] = 'Problem occured creating room'
@@ -424,12 +428,21 @@ def room_type_delete(request, *args, **kwargs):
 
 @hotel_owner_check
 def room_delete(request, *args, **kwargs):
+    def edit_sort_ids(floor, sort_id):
+        rooms = Room.objects.filter(floor=floor).order_by('sort_id')
+        for room in rooms:
+            if room.sort_id > sort_id:
+                room.sort_id -= 1
+                room.save()
+
     id = kwargs['pk']
     room = Room.objects.get(id=id)
     if request.method == 'POST':
         floor = room.floor
         hotel = floor.hotel
+        sort_id = room.sort_id
         room.delete()
+        edit_sort_ids(floor, sort_id)
         rooms = Room.objects.filter(floor=floor)
         context = {
             'hotel': hotel,
@@ -438,7 +451,7 @@ def room_delete(request, *args, **kwargs):
         }
         return render(request, 'manager/table_rooms.html', context)
     else:
-        return JsonResponse({"errors": f"Can't delete room {room.room_name}"}, status=400)
+        return JsonResponse({"errors": f"Can't delete room {room.name}"}, status=400)
 
 
 def detail_hotel(request, id):
