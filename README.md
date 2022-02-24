@@ -7,6 +7,7 @@ In this project I have experienced:
     * running a project in a virtual environment,
     * installing and using some django packages,
     * using htmx for ajax
+    * creating a custom model manager
     so far...
 
 Project specifications:

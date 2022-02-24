@@ -20,10 +20,10 @@
                     <td>{{ floor.description }}</td>
                     <td style="text-align: center;">
                         <div>
-                            <a href="javascript:void(0);"><i data-floor="{{floor.id}}" data-direction="up" class="bi bi-caret-up floor-move"></i></a>
+                            <a href="javascript:void(0);"><i data-target="floor_manager/floor_move" data-object="floor" data-id="{{floor.id}}" data-direction="up" class="bi bi-caret-up object-move"></i></a>
                         </div>
                         <div>
-                            <a href="javascript:void(0);"><i data-floor="{{floor.id}}" data-direction="down" class="bi bi-caret-down floor-move"></i></a>
+                            <a href="javascript:void(0);"><i data-target="floor_manager/floor_move" data-object="floor" data-id="{{floor.id}}" data-direction="down" class="bi bi-caret-down object-move"></i></a>
                         </div>
                     </td>
                     <td style="text-align: center;" class="align-middle">

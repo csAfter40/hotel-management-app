@@ -55,7 +55,6 @@ class IndexView(LoginRequiredMixin, IsManagerMixin, View):
         # hotels = Hotel.objects.filter(owner=self.request.user.owner)
         owner = self.request.user.owner
         hotels = owner.hotel_set.all()
-        print(hotels)
         context = {
             'hotels': hotels
         }
@@ -169,47 +168,53 @@ class FloorDeleteView(HotelOwnerMixin, DeleteView):
         return JsonResponse({}, status=200)
 
 
-class FloorMoveView(HotelOwnerMixin, View):
-
+class ObjectMoveView(HotelOwnerMixin, View):
+    """Common move view for sortable models"""
     def post(self, request, *args, **kwargs):
+        models = {
+            'floor': Floor,
+            'room': Room
+        }
+        # floors are sorted in hotel and rooms are sorted in floor.
+        parents = {
+            'floor': 'hotel',
+            'room': 'floor'
+        }
         data = json.loads(request.body)
-        floor_id = data['floor_id']
+        object_model = data['object']
+        object_id = data['object_id']
         direction = data['direction']
 
-        floor = Floor.objects.get(id=floor_id)
-        sort_id = floor.sort_id
-        hotel = floor.hotel
-        # Check if the user is in owners of the hotel
-        if not request.user.is_owner() or request.user.owner not in hotel.owners.all():
-            return JsonResponse({}, status=400)
-        floors = Floor.objects.get_sorted(hotel=hotel)
+        object = models[object_model].objects.get(id=object_id)
+        sort_id = object.sort_id
+        parent = getattr(object, parents[object_model])
+        attrs = {parents[object_model]: parent}
+        objects = models[object_model].objects.get_sorted(**attrs)
         if direction == 'up':
             if sort_id > 1:
-                # Switch sort_id's of 2 floors. 
-                other_floor = floors[sort_id-2]
-                floor.sort_id = 0
-                floor.save()
-                floor.sort_id, other_floor.sort_id = other_floor.sort_id, sort_id
-                other_floor.save()
-                floor.save()
+                # Switch sort_id's of 2 objects. 
+                other_object = objects[sort_id-2]
+                object.sort_id = 0
+                object.save()
+                object.sort_id, other_object.sort_id = other_object.sort_id, sort_id
+                other_object.save()
+                object.save()
                 return JsonResponse({}, status=200)
             return JsonResponse({}, status=400)
 
         elif direction == 'down':
-            print(sort_id)
-            if sort_id < floors.count():
-                # Switch sort_id's of 2 floors. 
-                other_floor = floors[sort_id]
-                floor.sort_id = 0
-                floor.save()
-                floor.sort_id, other_floor.sort_id = other_floor.sort_id, sort_id
-                other_floor.save()
-                floor.save()
+            if sort_id < objects.count():
+                # Switch sort_id's of 2 objects. 
+                other_object = objects[sort_id]
+                object.sort_id = 0
+                object.save()
+                object.sort_id, other_object.sort_id = other_object.sort_id, sort_id
+                other_object.save()
+                object.save()
                 return JsonResponse({}, status=200)
             return JsonResponse({}, status=400)
 
         return JsonResponse({}, status=400)
-
 
 class RoomTypesView(HotelOwnerMixin, View):
     form_class = CreateRoomTypeForm
@@ -301,11 +306,9 @@ class RoomTypesEditView(HotelOwnerMixin, UpdateView):
     def update_room_beds(self):
         # remove deleted room beds
         delete_list = []
-        print(list(self.bed_info.keys()))
         for room_bed in self.room_beds:
             if str(room_bed.bed.id) not in list(self.bed_info.keys()):
                 delete_list.append(room_bed.id)
-        print(delete_list)
         if delete_list:
             for id in delete_list:
                 RoomBed.objects.filter(id=id).delete()
