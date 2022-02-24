@@ -1,18 +1,15 @@
-from email import message
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.views.generic.base import View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from .models import Floor, Hotel, Owner, RoomType, Bed, RoomBed, Room
 from .forms import OwnerRegisterForm, HotelCreateForm, CreateFloorForm, CreateRoomTypeForm, BedForm, RoomBedForm, CreateRoomForm
 from .decorators import hotel_owner_check
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .mixins import HotelOwnerMixin, IsManagerMixin, OwnerCheckMixin
+from .mixins import HotelOwnerMixin, IsManagerMixin
 from django.db.utils import IntegrityError
 from django.contrib.auth.models import Group
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.core.exceptions import PermissionDenied
 import json
 
 class OwnerRegister(LoginRequiredMixin, CreateView):
@@ -90,7 +87,7 @@ class FloorManagerView(HotelOwnerMixin, CreateView):
         self.hotel = Hotel.objects.get(id=id)
 
     def get(self, request, *args, **kwargs):
-        floors = Floor.objects.filter(hotel=self.hotel).order_by('sort_id')
+        floors = Floor.objects.get_sorted(hotel=self.hotel)
         context = {
             'create': True,
             'hotel': self.hotel,
@@ -126,7 +123,7 @@ class FloorEditView(HotelOwnerMixin, UpdateView):
         self.success_url = reverse_lazy('manager:floor_manager', kwargs={'hotel_id':self.hotel.id})
 
     def get(self, request, *args, **kwargs):
-        floors = Floor.objects.filter(hotel=self.hotel).order_by('sort_id')
+        floors = Floor.objects.get_sorted(hotel=self.hotel)
 
         context = {
             'floor': self.floor,
@@ -153,7 +150,7 @@ class FloorDeleteView(HotelOwnerMixin, DeleteView):
         """
         Sets floor sort ids so that all sort ids can be sorted consecutively like '1, 2, 3 ... n' in a hotel with n floors.
         """
-        floors = Floor.objects.filter(hotel=hotel)
+        floors = Floor.objects.get_sorted(hotel=hotel)
         for floor in floors:
             if floor.sort_id>sort_id:
                 floor.sort_id -= 1
@@ -185,8 +182,7 @@ class FloorMoveView(HotelOwnerMixin, View):
         # Check if the user is in owners of the hotel
         if not request.user.is_owner() or request.user.owner not in hotel.owners.all():
             return JsonResponse({}, status=400)
-        floors = Floor.objects.filter(hotel=hotel).order_by('sort_id')
-
+        floors = Floor.objects.get_sorted(hotel=hotel)
         if direction == 'up':
             if sort_id > 1:
                 # Switch sort_id's of 2 floors. 
@@ -337,7 +333,7 @@ class RoomManagerView(HotelOwnerMixin, View):
     def get(self, request, *args, **kwargs):
         id = kwargs['hotel_id']
         hotel = Hotel.objects.get(id=id)
-        floors = Floor.objects.filter(hotel=hotel)
+        floors = Floor.objects.get_sorted(hotel=hotel)
         form = CreateRoomForm(hotel=hotel)
         context = {
             'create': True,
@@ -375,7 +371,7 @@ def floor_delete(request, *args, **kwargs):
         """
         Sets floor sort ids so that all sort ids can be sorted consecutively like '1, 2, 3 ... n' in a hotel with n floors.
         """
-        floors = Floor.objects.filter(hotel=hotel)
+        floors = Floor.objects.get_sorted(hotel=hotel)
         for floor in floors:
             if floor.sort_id>sort_id:
                 floor.sort_id -= 1
@@ -429,7 +425,7 @@ def room_type_delete(request, *args, **kwargs):
 @hotel_owner_check
 def room_delete(request, *args, **kwargs):
     def edit_sort_ids(floor, sort_id):
-        rooms = Room.objects.filter(floor=floor).order_by('sort_id')
+        rooms = Room.objects.get_sorted(floor=floor)
         for room in rooms:
             if room.sort_id > sort_id:
                 room.sort_id -= 1
@@ -443,7 +439,7 @@ def room_delete(request, *args, **kwargs):
         sort_id = room.sort_id
         room.delete()
         edit_sort_ids(floor, sort_id)
-        rooms = Room.objects.filter(floor=floor)
+        rooms = Room.objects.get_sorted(floor=floor)
         context = {
             'hotel': hotel,
             'rooms': rooms,

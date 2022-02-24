@@ -1,5 +1,6 @@
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
+from .managers import SortedModels
 
 
 class Owner(models.Model):
@@ -48,6 +49,8 @@ class Floor(models.Model):
     sort_id = models.IntegerField(blank=True, default=1)
     name = models.CharField(max_length=32)
     description = models.CharField(max_length=128, null=True, blank=True)
+
+    objects = SortedModels()
 
     class Meta:
         unique_together = [['hotel', 'sort_id']]
@@ -118,6 +121,8 @@ class Room(models.Model):
     vacancy = models.CharField(max_length=1, choices=vacancy_choices, default='V')
     cleaning_status = models.CharField(max_length=1, choices=cleaning_status_choices, default='C')
     sort_id = models.SmallIntegerField(null=True, default=1)
+
+    objects = SortedModels()
     
     def __str__(self):
         return self.name
