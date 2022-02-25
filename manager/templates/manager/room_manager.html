@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block body %}
+{% load crispy_forms_tags %}
 
 <h2 class="text-center m-3">{{hotel.name}} Room Manager</h2>
 
@@ -9,22 +10,45 @@
 
     {% if create %}
         <!-- Create Form -->
-        <div class=" bg-light py-2" style="border-right: 1px solid #888; width: 250px;">
-            <div class="text-center my-2" ><h3>Create Room</h3></div>
-            {% if message %}
-            <div class='text-danger'>{{ message }}</div>
-            {% endif %}
-            <form action="{% url 'manager:room_manager' hotel.id %}" method="post" class="px-3 ">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <input type="hidden" name="id" value="{{hotel.id}}">
-                <input class="btn btn-primary" type="submit" value="Submit Room">
-            </form>
+        <div class="container bg-light mx-0 px-1" style="border-right: 1px solid #888; width: 250px;">
+            <div class=" bg-light py-3">
+                <div class="text-center mb-2" ><h4>Create Room</h4></div>
+                {% if message %}
+                <div class='text-danger'>{{ message }}</div>
+                {% endif %}
+                <form action="{% url 'manager:room_manager' hotel.id %}" method="post" class="px-3 ">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <input type="hidden" name="id" value="{{hotel.id}}">
+                    <input class="btn btn-primary" type="submit" value="Submit Room">
+                </form>
+            </div>
+            <!-- Batch Create Rooms -->
+            <div class=" bg-light py-2 mb-3" style="border-top: 1px solid #888">
+                <div class="text-center my-2" ><h4>Batch Create Rooms</h4></div>
+                {% if message %}
+                <div class='text-danger'>{{ message }}</div>
+                {% endif %}
+                <form action="{% url 'manager:room_manager' hotel.id %}" method="post" class="px-3 ">
+                    {% csrf_token %}
+                    <div class="form-group ">
+                        <input autofocus class="form-control" type="number" name="from" placeholder="From room number">
+                    </div>
+                    <div class="form-group ">
+                        <input autofocus class="form-control" type="number" name="to" placeholder="To room number">
+                    </div>
+                    {{ form.floor|as_crispy_field }}
+                    {{ form.room_type|as_crispy_field }}
+                    <input type="hidden" name="id" value="{{hotel.id}}">
+                    <input type="hidden" name="method" value="batch">
+                    <input class="btn btn-primary" type="submit" value="Submit Rooms">
+                </form>
+            </div>
         </div>
     {% else %}
         <!-- Update Form -->
         <div class=" bg-light py-2" style="border-right: 1px solid #888; width: 250px;">
-            <div class="text-center my-2" ><h3>Update Room</h3></div>
+            <div class="text-center my-2" ><h4>Update Room</h4></div>
             {% if message %}
             <div class='text-danger'>{{ message }}</div>
             {% endif %}

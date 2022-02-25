@@ -1,5 +1,6 @@
+from email import message
 from django.http import HttpResponseRedirect, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.views.generic.base import View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from .models import Floor, Hotel, Owner, RoomType, Bed, RoomBed, Room
@@ -350,19 +351,45 @@ class RoomManagerView(HotelOwnerMixin, View):
         return render(request, 'manager/room_manager.html', context)
 
     def post(self, request, *args, **kwargs):
+        if request.POST['method'] == 'batch':
+            return self.batch(request, *args, **kwargs)
         id = request.POST['id']
         hotel = Hotel.objects.get(id=id)
         form = CreateRoomForm(hotel, request.POST)
-        message = {}
+        
         if form.is_valid():
+            self.create_room(form)
             data = form.cleaned_data
             floor = data['floor']
             room_count = Room.objects.filter(floor=floor).count()
             form.instance.sort_id = room_count + 1
             form.save()
         else:
-            message['message'] = 'Problem occured creating room'
-        return self.get(request, message, *args, **kwargs)
+            message = 'Problem occured creating room'
+        return self.get(request, message=message, *args, **kwargs)
+
+    def batch(self, request, *args, **kwargs):
+        data = request.POST
+        id = data['id']
+        try:
+            from_num = int(data['from'])
+            to_num = int(data['to'])
+        except:
+            message = 'Invalid room numbers'
+            return self.get(request, message=message, *args, **kwargs)
+        
+        if to_num < from_num:
+            to_num, from_num = from_num, to_num
+        floor = Floor.objects.get(id=data['floor'])
+        room_type = RoomType.objects.get(id=data['room_type'])
+        sort_id = Room.objects.filter(floor=floor).count() + 1
+        for num in range(from_num, to_num+1):
+            name = str(num)
+            room = Room(name=name, floor=floor, room_type=room_type, sort_id=sort_id)
+            room.save()
+            sort_id += 1
+        return redirect('manager:room_manager', hotel_id=id)   
+      
 
 class RoomEditView(HotelOwnerMixin, View):
     pass
