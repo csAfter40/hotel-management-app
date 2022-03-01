@@ -105,8 +105,12 @@ class RoomBedForm(forms.ModelForm):
         }
 
 class CreateRoomForm(forms.ModelForm):
-    def __init__(self, hotel, *args, **kwargs):
-        super (CreateRoomForm, self ).__init__(*args, **kwargs) # populates the post
+
+    def __init__(self, hotel=None, *args, **kwargs):
+        super (CreateRoomForm, self ).__init__(*args, **kwargs) 
+        if not hotel:
+            room = kwargs['instance']
+            hotel = room.floor.hotel
         self.fields['floor'].queryset = Floor.objects.filter(hotel=hotel)
         self.fields['room_type'].queryset = RoomType.objects.filter(hotel=hotel)
 

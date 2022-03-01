@@ -1,4 +1,5 @@
 from email import message
+from urllib import request
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.generic.base import View
@@ -6,7 +7,7 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from .models import Floor, Hotel, Owner, RoomType, Bed, RoomBed, Room
 from .forms import OwnerRegisterForm, HotelCreateForm, CreateFloorForm, CreateRoomTypeForm, BedForm, RoomBedForm, CreateRoomForm
 from .decorators import hotel_owner_check
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .mixins import HotelOwnerMixin, IsManagerMixin
 from django.db.utils import IntegrityError
@@ -389,54 +390,26 @@ class RoomManagerView(HotelOwnerMixin, View):
             room.save()
             sort_id += 1
         return redirect('manager:room_manager', hotel_id=id)   
-      
+ 
 
-class RoomEditView(HotelOwnerMixin, UpdateView):
+class RoomEditView(HotelOwnerMixin, UpdateView): # TODO: work on invalid form condition.
     model = Room
     form_class = CreateRoomForm
     template_name = 'manager/room_manager.html'
     
-    
     def setup(self, request, *args, **kwargs):
-        """Initialize attributes shared by all view methods."""
-        if hasattr(self, 'get') and not hasattr(self, 'head'):
-            self.head = self.get
-        self.request = request
-        self.args = args
-        self.kwargs = kwargs
-        pk = kwargs['pk']
-        self.room = Room.objects.get(id=pk)
-        self.floor = self.room.floor
-        self.hotel = self.floor.hotel
-        self.success_url = reverse_lazy('manager:room_manager', kwargs={'hotel_id':self.hotel.id})
-
-    def get(self, request, *args, **kwargs):
-        floors = Floor.objects.get_sorted(hotel=self.hotel)
-        context = {
-            'room': self.room,
-            'create': False,
-            'hotel': self.hotel,
-            'floors': floors,
-            'form': self.form_class(hotel=self.hotel, instance=self.room)
-        }
-        message = kwargs.get('message', None)
-        if message:
-            context['message'] = message
-        return render(request, 'manager/room_manager.html', context)
-
-    def get_form(self, form_class=None):
-        """Return an instance of the form to be used in this view."""
-        if form_class is None:
-            form_class = self.get_form_class()
-        return form_class(hotel=self.hotel, **self.get_form_kwargs())
+        hotel_id = kwargs['hotel_id']
+        self.hotel = Hotel.objects.get(id=hotel_id)
+        self.success_url = reverse('manager:room_manager', args=[hotel_id])
+        return super().setup(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        kwargs.setdefault('view', self)
-        if self.extra_context is not None:
-            kwargs.update(self.extra_context)
-        kwargs['hotel'] = self.hotel
-        kwargs['room'] = self.room
-        return kwargs
+        floors = Floor.objects.filter(hotel=self.hotel)
+        extra_context = {
+            'hotel': self.hotel,
+            'floors': floors,
+        }
+        return super().get_context_data(**extra_context)
 
 
 @hotel_owner_check
