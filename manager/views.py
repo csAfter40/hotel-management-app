@@ -3,7 +3,7 @@ from urllib import request
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.generic.base import View
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView, BaseCreateView
 from .models import Floor, Hotel, Owner, RoomType, Bed, RoomBed, Room
 from .forms import OwnerRegisterForm, HotelCreateForm, CreateFloorForm, CreateRoomTypeForm, BedForm, RoomBedForm, CreateRoomForm
 from .decorators import hotel_owner_check
@@ -218,6 +218,7 @@ class ObjectMoveView(HotelOwnerMixin, View):
 
         return JsonResponse({}, status=400)
 
+
 class RoomTypesView(HotelOwnerMixin, View):
     form_class = CreateRoomTypeForm
 
@@ -333,66 +334,95 @@ class RoomTypesEditView(HotelOwnerMixin, UpdateView):
         return super().form_valid(form)
         
 
-class RoomManagerView(HotelOwnerMixin, View):
+class RoomManagerView(HotelOwnerMixin, CreateView):
+    model = Room
+    form_class = CreateRoomForm
+    template_name = 'manager/room_manager.html'
+    
+    def setup(self, request, *args, **kwargs):
+        hotel_id = kwargs['hotel_id']
+        # if there is pk in the url than it is an update page, otherwise it is a create page.
+        pk = kwargs.get('pk', False)
+        self.create = not bool(pk)
+        self.hotel = Hotel.objects.get(id=hotel_id)
+        self.batch_form = CreateRoomForm(hotel=self.hotel)
+        self.message = None
+        self.batch_message = None
+        self.success_url = reverse('manager:room_manager', args=[hotel_id])
+        return super().setup(request, *args, **kwargs)
 
-    def get(self, request, *args, **kwargs):
-        id = kwargs['hotel_id']
-        hotel = Hotel.objects.get(id=id)
-        floors = Floor.objects.get_sorted(hotel=hotel)
-        form = CreateRoomForm(hotel=hotel)
-        context = {
-            'create': True,
-            'hotel': hotel,
+    def get_context_data(self, **kwargs):
+        floors = Floor.objects.filter(hotel=self.hotel)
+        extra_context = {
+            'hotel': self.hotel,
             'floors': floors,
-            'form': form
+            'create': self.create,
+            # 'batch_form': self.batch_form_class(**self.get_form_kwargs()),
+            'batch_form': self.batch_form,
+            'message': self.message,
+            'batch_message': self.batch_message,
         }
-        message = kwargs.get('message', None)
-        if message:
-            context['message'] = message
-        return render(request, 'manager/room_manager.html', context)
+        return super().get_context_data(**extra_context)
 
     def post(self, request, *args, **kwargs):
         if request.POST['method'] == 'batch':
             return self.batch(request, *args, **kwargs)
-        id = request.POST['id']
-        hotel = Hotel.objects.get(id=id)
-        form = CreateRoomForm(hotel, request.POST)
-        
-        if form.is_valid():
-            self.create_room(form)
+        self.object = None
+        return super(BaseCreateView, self).post(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        # hotel object needs to be passed to form
+        kwargs = super().get_form_kwargs()
+        kwargs.update({'hotel': self.hotel})
+        return kwargs
+
+    def form_valid(self, form):
+        if self.create:
             data = form.cleaned_data
             floor = data['floor']
             room_count = Room.objects.filter(floor=floor).count()
             form.instance.sort_id = room_count + 1
-            form.save()
-        else:
-            message = 'Problem occured creating room'
-        return self.get(request, message=message, *args, **kwargs)
-
+        self.object = form.save()
+        return super().form_valid(form)
+    
     def batch(self, request, *args, **kwargs):
+        print(request.POST)
+        def validate_room_numbers(data, rooms):
+            #check if the numbers are integers
+            try:
+                from_num = int(data['from'])
+                to_num = int(data['to'])
+            except:
+                self.batch_message = 'Invalid room numbers'
+                return self.get(request, *args, **kwargs)
+            if to_num < from_num:
+                to_num, from_num = from_num, to_num
+            #check if any of the room numbers in the given interval collide with the current room numbers in the floor.
+            form_room_numbers = [str(i) for i in range(from_num, to_num + 1)]
+            for room in rooms:
+                if room.name in form_room_numbers:
+                    self.batch_message = 'Conflicted room numbers. One or more room numbers already exists.'
+            return from_num, to_num
+
         data = request.POST
-        id = data['id']
-        try:
-            from_num = int(data['from'])
-            to_num = int(data['to'])
-        except:
-            message = 'Invalid room numbers'
-            return self.get(request, message=message, *args, **kwargs)
-        
-        if to_num < from_num:
-            to_num, from_num = from_num, to_num
         floor = Floor.objects.get(id=data['floor'])
         room_type = RoomType.objects.get(id=data['room_type'])
-        sort_id = Room.objects.filter(floor=floor).count() + 1
+        rooms = Room.objects.filter(floor=floor)
+        from_num, to_num = validate_room_numbers(data, rooms)
+        if self.batch_message:
+            self.batch_form = self.get_form()
+            request.method = 'GET' # prevents single create form from populating with batch create form data
+            return self.get(request, *args, **kwargs)
+        sort_id = rooms.count() + 1
         for num in range(from_num, to_num+1):
             name = str(num)
             room = Room(name=name, floor=floor, room_type=room_type, sort_id=sort_id)
             room.save()
             sort_id += 1
-        return redirect('manager:room_manager', hotel_id=id)   
- 
+        return redirect('manager:room_manager', hotel_id=data['id']) 
 
-class RoomEditView(HotelOwnerMixin, UpdateView): # TODO: work on invalid form condition.
+
+class RoomEditView(HotelOwnerMixin, UpdateView):
     model = Room
     form_class = CreateRoomForm
     template_name = 'manager/room_manager.html'

@@ -20,14 +20,15 @@
                     {% csrf_token %}
                     {{ form.as_p }}
                     <input type="hidden" name="id" value="{{hotel.id}}">
+                    <input type="hidden" name="method" value="single">
                     <input class="btn btn-primary" type="submit" value="Submit Room">
                 </form>
             </div>
             <!-- Batch Create Rooms -->
             <div class=" bg-light py-2 mb-3" style="border-top: 1px solid #888">
                 <div class="text-center my-2" ><h4>Batch Create Rooms</h4></div>
-                {% if message %}
-                <div class='text-danger'>{{ message }}</div>
+                {% if batch_message %}
+                <div class='text-danger'>{{ batch_message }}</div>
                 {% endif %}
                 <form action="{% url 'manager:room_manager' hotel.id %}" method="post" class="px-3 ">
                     {% csrf_token %}
@@ -37,8 +38,8 @@
                     <div class="form-group ">
                         <input autofocus class="form-control" type="number" name="to" placeholder="To room number">
                     </div>
-                    {{ form.floor|as_crispy_field }}
-                    {{ form.room_type|as_crispy_field }}
+                    {{ batch_form.floor|as_crispy_field }}
+                    {{ batch_form.room_type|as_crispy_field }}
                     <input type="hidden" name="id" value="{{hotel.id}}">
                     <input type="hidden" name="method" value="batch">
                     <input class="btn btn-primary" type="submit" value="Submit Rooms">

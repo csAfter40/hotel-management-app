@@ -16,7 +16,7 @@
         <tbody>
             {% for room in rooms %}
                 <tr>
-                    <th scope="row">{{forloop.counter}}</th>
+                    <th scope="row">{{room.sort_id}}</th>
                     <td>{{ room.name }}</td>
                     <td>{{ room.room_type }}</td>
                     <td>{{ room.floor }}</td>
