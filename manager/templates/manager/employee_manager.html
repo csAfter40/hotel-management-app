@@ -1,0 +1,63 @@
+{% extends 'main/layout.html'  %}
+{% load static %}
+
+<!-- {% block style %}
+    <link rel="stylesheet" href="{% static 'manager/floor_manager.css' %}">
+{% endblock %} -->
+
+{% block body %}
+{% load crispy_forms_tags %}
+<h2 class="text-center m-3" id="main_title">{{hotel.name}} Employee Manager</h2>
+
+<div class="d-flex  justify-content-center mb-5">
+    
+    {% if create %}
+        <!-- Create Form -->
+        <div class=" bg-light py-2" style="border-right: 1px solid #888; width: 250px;">
+            <div class="text-center my-2" ><h3>Create Employee</h3></div>
+            {% if message %}
+            <div class='text-danger'>{{ message }}</div>
+            {% endif %}
+            <form action="{% url 'manager:employee_manager' hotel.id %}" method="post" class="px-3 ">
+                {% csrf_token %}
+                {{ create_employee_form|crispy }}
+                <input type="hidden" name="id" value="{{hotel.id}}">
+                <input class="btn btn-primary" type="submit" value="Submit Employee">
+            </form>
+        </div>
+    {% else %}
+        <!-- Update Form -->
+        <div class=" bg-light py-2" style="border-right: 1px solid #888; width: 250px;">
+            <div class="text-center my-2" ><h3>Update Employee</h3></div>
+            {% if message %}
+            <div class='text-danger'>{{ message }}</div>
+            {% endif %}
+            <form action="{% url 'manager:employee_edit' hotel_id=hotel.id pk=employee.id %}" method="post" class="px-3 ">
+                {% csrf_token %}
+                {{ create_employee_form|crispy }}
+                <input type="hidden" name="id" value="{{hotel.id}}">
+                <input class="btn btn-primary" type="submit" value="Update">
+                <a href="{% url 'manager:room_manager' hotel.id %}" class="btn btn-danger">Cancel</a>
+            </form>
+        </div>
+    {% endif %}
+
+    {% if not employees %}
+        <div class="bg-light w-75 p-3">
+            <div class="alert alert-warning" role="alert">
+                No employees available. 
+            </div>
+        </div>
+    
+    {% else %}
+        <!-- Floors table -->
+        {% include 'manager/table_employees.html' with employees=employees hotel=hotel %}
+        
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'manager/table_controls.js' %}"></script>
+{% endblock %}

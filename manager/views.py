@@ -234,7 +234,7 @@ class RoomTypesView(HotelOwnerMixin, View):
         self.room_type_form = CreateRoomTypeForm()
         self.bed_form = BedForm()
         self.room_bed_form = RoomBedForm()
-
+        
     def get(self, request, *args, **kwargs):
         beds = Bed.objects.filter(is_general=True).filter(hotel=self.hotel)
         room_types = RoomType.objects.filter(hotel=self.hotel)
@@ -442,6 +442,14 @@ class RoomEditView(HotelOwnerMixin, UpdateView):
         return super().get_context_data(**extra_context)
 
 
+class EmployeeManagerView(HotelOwnerMixin, CreateView):
+    pass
+
+
+class EmployeeEditView(HotelOwnerMixin, UpdateView):
+    pass
+
+
 @hotel_owner_check
 def floor_delete(request, *args, **kwargs):
 
@@ -527,6 +535,9 @@ def room_delete(request, *args, **kwargs):
     else:
         return JsonResponse({"errors": f"Can't delete room {room.name}"}, status=400)
 
+@hotel_owner_check
+def employee_delete(request, *args, **kwargs):
+    pass
 
 def detail_hotel(request, id):
     pass

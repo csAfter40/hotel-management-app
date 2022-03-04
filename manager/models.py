@@ -132,6 +132,11 @@ class Room(models.Model):
         ordering = ['sort_id']
 
 
+class HotelUser(models.Model):
+    user = models.ForeignKey('main.User', on_delete=models.CASCADE)
+    hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
+
+
 class Employee(models.Model):
     employee_type_choices = [
         ('FR', 'Front Desk'),
@@ -154,7 +159,7 @@ class Employee(models.Model):
         ('P', 'passport'),
     ]
 
-    user = models.ForeignKey('main.User', on_delete=models.CASCADE)
+    user = models.ForeignKey(HotelUser, on_delete=models.CASCADE)
     employee_type = models.CharField(max_length=2, choices=employee_type_choices)
     first_name = models.CharField(max_length=32)
     last_name = models.CharField(max_length=32)
@@ -166,6 +171,10 @@ class Employee(models.Model):
 
     def __str__(self):
         return self.employee_type, self.first_name, self.last_name
+
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
 
 
 class RoomCleaning(models.Model):
