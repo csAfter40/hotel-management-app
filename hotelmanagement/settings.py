@@ -12,16 +12,24 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 from django.urls import reverse
 from pathlib import Path
+import environ
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+# print(BASE_DIR)
+# BASE_DIRxxx = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+env = environ.Env()
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-25o29c=c+my%&m0jrbzu#)d$h%lji)9%8p&d*ut+=ax3r2@mxi'
+SECRET_KEY = env('SECRET_KEY')
+# SECRET_KEY = '^6-_%^g1i(k2h$q3daafr=q99i*#^lq=w*30ndy%sc@iv^3tj%'
+# SECRET_KEY='django-insecure-25o29c=c+my%&m0jrbzu#)d$h%lji)9%8p&d*ut+=ax3r2@mxi'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
