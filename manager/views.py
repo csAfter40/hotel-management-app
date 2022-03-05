@@ -4,8 +4,8 @@ from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.generic.base import View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView, BaseCreateView
-from .models import Floor, Hotel, Owner, RoomType, Bed, RoomBed, Room
-from .forms import OwnerRegisterForm, HotelCreateForm, CreateFloorForm, CreateRoomTypeForm, BedForm, RoomBedForm, CreateRoomForm
+from .models import Employee, Floor, Hotel, Owner, RoomType, Bed, RoomBed, Room
+from .forms import OwnerRegisterForm, HotelCreateForm, CreateFloorForm, CreateRoomTypeForm, BedForm, RoomBedForm, CreateRoomForm, CreateEmployeeForm
 from .decorators import hotel_owner_check
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -443,12 +443,38 @@ class RoomEditView(HotelOwnerMixin, UpdateView):
 
 
 class EmployeeManagerView(HotelOwnerMixin, CreateView):
-    pass
+    # model = Employee
+    form_class = CreateEmployeeForm
+    template_name = 'manager/employee_manager.html'
+    
+    def setup(self, request, *args, **kwargs):
+        hotel_id = kwargs['hotel_id']
+        self.hotel = Hotel.objects.get(id=hotel_id)
+        self.success_url = reverse('manager:employee_manager', kwargs={'hotel_id':hotel_id})
+        return super().setup(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        employees = Employee.objects.filter(user__hotel=self.hotel)
+        extra_context = {
+            'employees': employees,
+            'create': True,
+            'hotel': self.hotel,
+        }
+        kwargs.update(extra_context)
+        return super().get_context_data(**kwargs)
+
+    def get_form_kwargs(self):
+        # overriding form kwargs data in order to pass hotel object to the form.
+        kwargs = super().get_form_kwargs()
+        kwargs.update({'hotel':self.hotel})
+        return kwargs
 
 class EmployeeEditView(HotelOwnerMixin, UpdateView):
     pass
 
+
+class HotelUserView(HotelOwnerMixin, CreateView):
+    pass
 
 @hotel_owner_check
 def floor_delete(request, *args, **kwargs):

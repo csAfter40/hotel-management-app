@@ -20,6 +20,7 @@ urlpatterns = [
     path('<int:hotel_id>/room_types/edit/<pk>', views.RoomTypesEditView.as_view(), name='room_types_edit'),
     path('<int:hotel_id>/employee_manager', views.EmployeeManagerView.as_view(), name='employee_manager'),
     path('<int:hotel_id>/employee_manager/edit/<pk>', views.EmployeeEditView.as_view(), name='employee_edit'),
+    path('<int:hotel_id>/employee_manager/hotel_user', views.HotelUserView.as_view(), name='hotel_user'),
     path('add_employee', views.add_employee, name='add_employee'),
     path('employee/<int:id>', views.detail_employee, name='detail_employee'),
     path('employee/edit/<int:id>', views.edit_employee, name='edit_employee'),  

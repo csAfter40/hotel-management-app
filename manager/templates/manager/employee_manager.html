@@ -20,7 +20,12 @@
             {% endif %}
             <form action="{% url 'manager:employee_manager' hotel.id %}" method="post" class="px-3 ">
                 {% csrf_token %}
-                {{ create_employee_form|crispy }}
+                {% for field in form %}
+                    {{ field|as_crispy_field }}
+                    {% if field == form.user %}
+                        <a href="{% url 'manager:hotel_user' hotel.id %}" class="btn btn-primary btn-block mb-4">Create User</a>        
+                    {% endif %}
+                {% endfor %}
                 <input type="hidden" name="id" value="{{hotel.id}}">
                 <input class="btn btn-primary" type="submit" value="Submit Employee">
             </form>
@@ -34,7 +39,7 @@
             {% endif %}
             <form action="{% url 'manager:employee_edit' hotel_id=hotel.id pk=employee.id %}" method="post" class="px-3 ">
                 {% csrf_token %}
-                {{ create_employee_form|crispy }}
+                {{ form|crispy }}
                 <input type="hidden" name="id" value="{{hotel.id}}">
                 <input class="btn btn-primary" type="submit" value="Update">
                 <a href="{% url 'manager:room_manager' hotel.id %}" class="btn btn-danger">Cancel</a>
@@ -50,9 +55,8 @@
         </div>
     
     {% else %}
-        <!-- Floors table -->
+        <!-- employees table -->
         {% include 'manager/table_employees.html' with employees=employees hotel=hotel %}
-        
     {% endif %}
 </div>
 

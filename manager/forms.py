@@ -1,5 +1,6 @@
 from django import forms
-from .models import Owner, Hotel, Floor, RoomType, Bed, RoomBed, Room
+from .models import Employee, HotelUser, Owner, Hotel, Floor, RoomType, Bed, RoomBed, Room
+from main.models import User
 
 class DateInput(forms.DateInput):
     input_type = 'date'
@@ -107,7 +108,7 @@ class RoomBedForm(forms.ModelForm):
 class CreateRoomForm(forms.ModelForm):
 
     def __init__(self, hotel=None, *args, **kwargs):
-        super (CreateRoomForm, self ).__init__(*args, **kwargs) 
+        super(CreateRoomForm, self).__init__(*args, **kwargs) 
         if not hotel:
             room = kwargs['instance']
             hotel = room.floor.hotel
@@ -121,4 +122,24 @@ class CreateRoomForm(forms.ModelForm):
             'floor': forms.Select(attrs={'class': 'form-control'}),
             'room_type': forms.Select(attrs={'class': 'form-control'}),
             'name': forms.TextInput(attrs={'class': 'form-control'})
+        }
+
+class CreateEmployeeForm(forms.ModelForm):
+
+    def __init__(self, hotel, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['user'].queryset = HotelUser.objects.filter(hotel=hotel)
+
+    class Meta:
+        model = Employee
+        exclude = []
+        widgets = {
+            'user': forms.Select(attrs={'class': 'form-control'}),
+            'employee_type': forms.Select(attrs={'class': 'form-control'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'gender': forms.Select(attrs={'class': 'form-control'}),
+            'date_of_birth': forms.DateInput(attrs={'class': 'form-control'}),
+            'nationality': forms.Select(attrs={'class': 'form-control'}),
+            'phone_number': forms.TextInput(attrs={'class': 'form-control'}),
         }
