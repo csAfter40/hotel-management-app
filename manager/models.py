@@ -136,6 +136,9 @@ class HotelUser(models.Model):
     user = models.ForeignKey('main.User', on_delete=models.CASCADE)
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return self.user.username
+
 
 class Employee(models.Model):
     employee_type_choices = [

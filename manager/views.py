@@ -1,10 +1,10 @@
-from email import message
 from urllib import request
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.generic.base import View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView, BaseCreateView
-from .models import Employee, Floor, Hotel, Owner, RoomType, Bed, RoomBed, Room
+from .models import Employee, Floor, Hotel, HotelUser, Owner, RoomType, Bed, RoomBed, Room
+from main.models import User
 from .forms import OwnerRegisterForm, HotelCreateForm, CreateFloorForm, CreateRoomTypeForm, BedForm, RoomBedForm, CreateRoomForm, CreateEmployeeForm
 from .decorators import hotel_owner_check
 from django.urls import reverse_lazy, reverse
@@ -473,8 +473,44 @@ class EmployeeEditView(HotelOwnerMixin, UpdateView):
     pass
 
 
-class HotelUserView(HotelOwnerMixin, CreateView):
-    pass
+class HotelUserView(HotelOwnerMixin, View):
+
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        hotel_id = kwargs['hotel_id']
+        self.hotel = Hotel.objects.get(id=hotel_id)
+
+    def get(self, request, *args, **kwargs):
+        context = {
+            'hotel': self.hotel
+        }
+        return render(request, 'manager/create_user.html', context)
+
+    def post(self, request, *arg, **kwargs):
+        username = request.POST['username']
+        email = request.POST['email']
+
+        #Ensure password matches confirmation
+        password = request.POST['password']
+        confirmation = request.POST['confirmation']
+        if password != confirmation:
+            return render(request, 'manager/create_user.html', {
+                'message': 'Passwords must match!',
+                'hotel': self.hotel
+                })
+
+        #Attempt create new user
+        try:
+            user = User.objects.create_user(username=username, email=email, password=password)
+            user.save()
+            hotel_user = HotelUser.objects.create(user=user, hotel=self.hotel)
+            hotel_user.save()
+        except IntegrityError:
+            return render(request, 'manager/create_user.html', {
+                'message': 'Username already taken!',
+                'hotel': self.hotel
+                })
+        return HttpResponseRedirect(reverse('manager:employee_manager', kwargs={'hotel_id': self.hotel.id}))
 
 @hotel_owner_check
 def floor_delete(request, *args, **kwargs):
