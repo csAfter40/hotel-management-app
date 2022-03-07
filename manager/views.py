@@ -470,7 +470,34 @@ class EmployeeManagerView(HotelOwnerMixin, CreateView):
         return kwargs
 
 class EmployeeEditView(HotelOwnerMixin, UpdateView):
-    pass
+    form_class = CreateEmployeeForm
+    model = Employee
+    template_name = 'manager/employee_manager.html'
+    
+
+    def setup(self, request, *args, **kwargs):
+       super().setup(request, *args, **kwargs)
+       self.hotel = Hotel.objects.get(id=self.kwargs['hotel_id'])
+       self.success_url = reverse('manager:employee_manager', kwargs={'hotel_id': self.kwargs['hotel_id']})
+
+    def get_context_data(self, **kwargs):
+        print('context')
+        print('kwargs before', self.kwargs)
+        employees = Employee.objects.filter(user__hotel=self.hotel)
+        extra_context = {
+            'create': False,
+            'hotel': self.hotel,
+            'employees': employees,
+        }
+
+        kwargs.update(extra_context)
+        return super().get_context_data(**kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+
+        kwargs.update({'hotel': self.hotel})
+        return kwargs
 
 
 class HotelUserView(HotelOwnerMixin, View):

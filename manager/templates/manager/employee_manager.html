@@ -41,8 +41,18 @@
                 {% csrf_token %}
                 {{ form|crispy }}
                 <input type="hidden" name="id" value="{{hotel.id}}">
-                <input class="btn btn-primary" type="submit" value="Update">
-                <a href="{% url 'manager:room_manager' hotel.id %}" class="btn btn-danger">Cancel</a>
+                <div class="container">
+                    <div class="row">
+                        <div class="col-sm px-1">
+                            <input class="btn btn-primary btn-block" type="submit" value="Update">
+                        </div>
+                        <div class="col-sm px-1">
+                            <a href="{% url 'manager:employee_manager' hotel.id %}" class="btn btn-danger btn-block">Cancel</a>
+                        </div>
+                    </div>
+                </div>
+                
+                
             </form>
         </div>
     {% endif %}
