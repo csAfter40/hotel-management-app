@@ -599,7 +599,16 @@ def room_delete(request, *args, **kwargs):
 
 @hotel_owner_check
 def employee_delete(request, *args, **kwargs):
-    pass
+    if request.method == 'POST':
+        employee_id = kwargs['pk']
+        hotel_id = kwargs['hotel_id']
+        employee = Employee.objects.get(id=employee_id)
+        employee.delete()
+        context = {
+            'employees': Employee.objects.all(),
+            'hotel': Hotel.objects.get(id=hotel_id)
+        }
+        return render(request, 'manager/table_employees.html', context)
 
 def detail_hotel(request, id):
     pass
