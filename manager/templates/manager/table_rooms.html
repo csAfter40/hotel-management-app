@@ -38,9 +38,11 @@
                                 class="bi bi-trash" 
                                 hx-post="room_manager/del/{{room.id}}" 
                                 hx-target="#floor_{{floor.id}}_rooms_div" 
-                                hx-trigger="click" 
+                                hx-trigger="confirmed" 
                                 hx-swap="outerHTML swap:100ms"
-                                hx-confirm="Are you sure you want to delete the room?"></i>
+                                _="on click 
+                                    call Swal.fire({title:'Confirm', text:'Are you sure you want to delete the room?'})
+                                    if result.isConfirmed trigger confirmed"></i>
                         </a>
                     </td>
                 </tr>

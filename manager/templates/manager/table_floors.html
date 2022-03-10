@@ -30,14 +30,17 @@
                         <a href="{% url 'manager:floor_edit' hotel_id=hotel.id pk=floor.id %}"><i class="bi bi-pencil-square"></i></a>
                     </td>
                     <td style="text-align: center;" class="align-middle">
+
                         <a href="javascript:void(0);">
                             <i data-floor="{{floor.id}}" 
                                 class="bi bi-trash" 
                                 hx-post="floor_manager/del/{{floor.id}}" 
                                 hx-target="#table_floors_div" 
-                                hx-trigger="click" 
+                                hx-trigger="confirmed" 
                                 hx-swap="outerHTML swap:100ms"
-                                hx-confirm="Are you sure you want to delete the floor?"></i>
+                                _="on click 
+                                    call Swal.fire({title: 'Confirm', text: 'Are you sure you want to delete the floor?'}) 
+                                    if result.isConfirmed trigger confirmed"></i>
                         </a>
                     </td>
                 </tr>

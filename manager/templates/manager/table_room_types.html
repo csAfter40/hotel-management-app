@@ -22,16 +22,17 @@
                     <td style="text-align: center;" class="align-middle">
                         <a href="{% url 'manager:room_types_edit' hotel_id=hotel.id pk=room_type.id %}"><i class="bi bi-pencil-square"></i></a>
                     </td>
-                    <!-- TODO -->
                     <td style="text-align: center;" class="align-middle">
                         <a href="javascript:void(0);">
                             <i data-floor="{{room_type.id}}" 
                                 class="bi bi-trash" 
                                 hx-post="room_types/del/{{room_type.id}}" 
                                 hx-target="#table_room_types_div" 
-                                hx-trigger="click" 
+                                hx-trigger="confirmed" 
                                 hx-swap="outerHTML swap:100ms"
-                                hx-confirm="Are you sure you want to delete the room type?"></i>
+                                _="on click 
+                                    call Swal.fire({title: 'Confirm', text: 'Are you sure you want to delete the room type?'})
+                                    if result.isConfirmed trigger confirmed"></i>
                         </a>
                     </td>
                 </tr>
