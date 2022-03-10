@@ -134,7 +134,7 @@ class CreateEmployeeForm(forms.ModelForm):
         model = Employee
         exclude = []
         widgets = {
-            'user': forms.Select(attrs={'class': 'form-control'}),
+            'user': forms.Select(attrs={'class': 'form-control', 'id': 'user-field'}),
             'employee_type': forms.Select(attrs={'class': 'form-control'}),
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),

@@ -26,12 +26,13 @@ urlpatterns = [
     path('employee/edit/<int:id>', views.edit_employee, name='edit_employee'),  
 ]
 
-htmx_urlpatterns = [
+htmx_ajax_urlpatterns = [
     path('<int:hotel_id>/floor_manager/del/<int:pk>', views.floor_delete, name='floor_delete'),
     path('<int:hotel_id>/room_types/del/<int:pk>', views.room_type_delete, name='room_type_delete'),
     path('<int:hotel_id>/room_manager/del/<int:pk>', views.room_delete, name='room_delete'),
     path('<int:hotel_id>/employee_manager/del/<int:pk>', views.employee_delete, name='employee_delete'),
+    path('<int:hotel_id>/employee_manager/check_user', views.check_hotel_user, name='check_hotel_user'),
     path('<int:hotel_id>/create_bed', views.create_bed, name='create_bed'),
 ]
 
-urlpatterns += htmx_urlpatterns
+urlpatterns += htmx_ajax_urlpatterns

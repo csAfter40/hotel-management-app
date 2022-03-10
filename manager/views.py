@@ -1,5 +1,4 @@
-from urllib import request
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.generic.base import View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView, BaseCreateView
@@ -469,6 +468,7 @@ class EmployeeManagerView(HotelOwnerMixin, CreateView):
         kwargs.update({'hotel':self.hotel})
         return kwargs
 
+
 class EmployeeEditView(HotelOwnerMixin, UpdateView):
     form_class = CreateEmployeeForm
     model = Employee
@@ -481,8 +481,6 @@ class EmployeeEditView(HotelOwnerMixin, UpdateView):
        self.success_url = reverse('manager:employee_manager', kwargs={'hotel_id': self.kwargs['hotel_id']})
 
     def get_context_data(self, **kwargs):
-        print('context')
-        print('kwargs before', self.kwargs)
         employees = Employee.objects.filter(user__hotel=self.hotel)
         extra_context = {
             'create': False,
@@ -495,7 +493,6 @@ class EmployeeEditView(HotelOwnerMixin, UpdateView):
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-
         kwargs.update({'hotel': self.hotel})
         return kwargs
 
@@ -636,6 +633,21 @@ def employee_delete(request, *args, **kwargs):
             'hotel': Hotel.objects.get(id=hotel_id)
         }
         return render(request, 'manager/table_employees.html', context)
+
+@hotel_owner_check
+def check_hotel_user(request, *args, **kwargs):
+    # if request.POST:
+    #     print(request)
+    # hotel_id = kwargs['hotel_id']
+    data = json.loads(request.body)
+    user_id = data['user']
+    hotel_user = HotelUser.objects.get(id=user_id)
+    # hotel = Hotel.objects.get(id=id)
+    print(hotel_user)
+    employees = Employee.objects.filter(user=hotel_user)
+    if employees.count() == 0:
+        return HttpResponse(status=200)
+    return HttpResponse(status=400)
 
 def detail_hotel(request, id):
     pass

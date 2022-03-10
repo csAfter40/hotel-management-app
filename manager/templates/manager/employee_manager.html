@@ -9,16 +9,16 @@
 {% load crispy_forms_tags %}
 <h2 class="text-center m-3" id="main_title">{{hotel.name}} Employee Manager</h2>
 
-<div class="d-flex  justify-content-center mb-5">
+<div class="d-flex  justify-content-center mb-5 mx-2">
     
     {% if create %}
         <!-- Create Form -->
-        <div class=" bg-light py-2" style="border-right: 1px solid #888; width: 250px;">
+        <div class=" bg-light py-2" style="border-right: 1px solid #888; width: 350px;">
             <div class="text-center my-2" ><h3>Create Employee</h3></div>
             {% if message %}
             <div class='text-danger'>{{ message }}</div>
             {% endif %}
-            <form action="{% url 'manager:employee_manager' hotel.id %}" method="post" class="px-3 ">
+            <form action="{% url 'manager:employee_manager' hotel.id %}" id="create-form" method="post" class="px-3 ">
                 {% csrf_token %}
                 {% for field in form %}
                     {{ field|as_crispy_field }}
@@ -26,13 +26,13 @@
                         <a href="{% url 'manager:hotel_user' hotel.id %}" class="btn btn-primary btn-block mb-4">Create New User</a>        
                     {% endif %}
                 {% endfor %}
-                <input type="hidden" name="id" value="{{hotel.id}}">
+                <input type="hidden" name="id" id="hotel-id" value="{{hotel.id}}">
                 <input class="btn btn-primary btn-block" type="submit" value="Submit Employee">
             </form>
         </div>
     {% else %}
         <!-- Update Form -->
-        <div class=" bg-light py-2" style="border-right: 1px solid #888; width: 250px;">
+        <div class=" bg-light py-2" style="border-right: 1px solid #888; width: 350px;">
             <div class="text-center my-2" ><h3>Update Employee</h3></div>
             {% if message %}
             <div class='text-danger'>{{ message }}</div>
@@ -74,4 +74,5 @@
 
 {% block script %}
 <script src="{% static 'manager/table_controls.js' %}"></script>
+<script src="{% static 'manager/employee_manager.js' %}"></script>
 {% endblock %}
