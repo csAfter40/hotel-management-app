@@ -2,6 +2,7 @@ const form = document.querySelector('#create-form');
 const userField = document.querySelector('#user-field');
 const hotelInput = document.querySelector('#hotel-id');
 const csrfToken = document.getElementsByName("csrfmiddlewaretoken")[0].value;
+
 form.addEventListener('submit', (event) => {
     event.preventDefault();
     fetch("employee_manager/check_user", {
@@ -15,16 +16,17 @@ form.addEventListener('submit', (event) => {
         if (response.ok) {
             form.submit();
         } else {
-            if (confirm("Employee with this username already exists, \nDo you want to proceed?") == true) {
-                form.submit();
-            } else {return false}
+            Swal.fire({  
+                title: 'Employee with this username already exists. \nDo you want to proceed?',  
+                showCancelButton: true,  
+                confirmButtonText: `Submit`,  
+              }).then((result) => {  
+                  if (result.isConfirmed) {    
+                    form.submit();  
+                  } else if (result.isDenied) {    
+                      return false
+                   }
+              });
         };
     });
 })
-
-// form.addEventListener('submit', myFunc);
-// function myFunc(event) {
-//     event.preventDefault();
-//     console.log(event);
-//     return false
-// }
