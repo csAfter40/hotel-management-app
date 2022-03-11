@@ -26,6 +26,7 @@
                         <a href="{% url 'manager:hotel_user' hotel.id %}" class="btn btn-primary btn-block mb-4">Create New User</a>        
                     {% endif %}
                 {% endfor %}
+                <input type="hidden" name="form-type" id="form-type" value="create">
                 <input type="hidden" name="id" id="hotel-id" value="{{hotel.id}}">
                 <input class="btn btn-primary btn-block" type="submit" value="Submit Employee">
             </form>
@@ -40,6 +41,7 @@
             <form action="{% url 'manager:employee_edit' hotel_id=hotel.id pk=employee.id %}" method="post" class="px-3 ">
                 {% csrf_token %}
                 {{ form|crispy }}
+                <input type="hidden" name="form-type" id="form-type" value="update">
                 <input type="hidden" name="id" value="{{hotel.id}}">
                 <div class="container">
                     <div class="row">

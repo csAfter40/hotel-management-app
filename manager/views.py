@@ -647,7 +647,7 @@ def check_hotel_user(request, *args, **kwargs):
     employees = Employee.objects.filter(user=hotel_user)
     if employees.count() == 0:
         return HttpResponse(status=200)
-    return HttpResponse(status=400)
+    return HttpResponse(status=409)
 
 def detail_hotel(request, id):
     pass

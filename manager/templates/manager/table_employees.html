@@ -16,7 +16,7 @@
                 <tr>
                     <th scope="row">{{forloop.counter}}</th>
                     <td>{{ employee.full_name }}</td>
-                    <td>{{ employee.employee_type }}</td>
+                    <td>{{ employee.get_employee_type_display }}</td>
                     <td>{{ employee.phone_number }}</td>
                     <td style="text-align: center;" class="align-middle">
                         <a href="{% url 'manager:employee_edit' hotel_id=hotel.id pk=employee.id %}"><i class="bi bi-pencil-square"></i></a>
