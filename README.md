@@ -1,4 +1,4 @@
-This is my final project of Harvard's CS50 Web Developement with Python and JavaScript online course. I am planning to make a hotel management web applications which can be used by front dest members, staff, managers and customers. 
+This is my final project of Harvard's CS50 Web Developement with Python and JavaScript online course. I am planning to make a hotel management web applications which can be used by front desk members, staff, managers and customers. 
 
 In this project I have experienced:
     * using class based views,
@@ -6,8 +6,9 @@ In this project I have experienced:
     * organizing multiple apps in a project,
     * running a project in a virtual environment,
     * installing and using some django packages,
-    * using htmx for ajax
-    * creating a custom model manager
+    * using htmx for ajax,
+    * creating a custom model manager,
+    * using signals
     so far...
 
 Project specifications:

@@ -1,9 +1,11 @@
 from django.db import models
+from django.db.models.signals import post_save
 from django.contrib.auth.models import AbstractUser
 from phonenumber_field.modelfields import PhoneNumberField
+from django.dispatch import receiver
 
 def upload_to(instance, filename):
-    return f'profile_pictures/{filename}'
+    return f'profile_pictures/{instance.user.id}/{filename}'
 
 class User(AbstractUser):
     
@@ -47,13 +49,23 @@ class UserProfile(models.Model):
         ('F', 'Female'),
     ]
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    first_name = models.CharField(max_length=32)
-    last_name = models.CharField(max_length=32)
-    gender = models.CharField(max_length=1, choices=gender_choices)
+    first_name = models.CharField(max_length=32, null=True, blank=True)
+    last_name = models.CharField(max_length=32, null=True, blank=True)
+    gender = models.CharField(max_length=1, choices=gender_choices, null=True, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
-    nationality = models.ForeignKey(Country, on_delete=models.SET_NULL, null=True)
-    phone_number = PhoneNumberField()
-    profile_picture = models.ImageField('Profile Picture', upload_to=upload_to, default='profile_pictures/default.jpg')
+    nationality = models.ForeignKey(Country, on_delete=models.SET_NULL, null=True, blank=True)
+    phone_number = PhoneNumberField(null=True, blank=True)
+    profile_picture = models.ImageField('Profile Picture', upload_to=upload_to, default='profile_pictures/default.jpg', null=True, blank=True)
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        if self.first_name and self.last_name:
+            return f"{self.first_name} {self.last_name}({self.user.username})"
+        else:
+            return self.user.username
+# TODO
+@ receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    print('kwargs:')
+    print(kwargs)
+    if created:
+        UserProfile.objects.create(user=instance) 

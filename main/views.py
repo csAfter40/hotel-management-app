@@ -2,7 +2,8 @@ from django.http import HttpResponseRedirect
 from django.http.response import HttpResponse
 from django.shortcuts import render
 from django.views import View
-from .models import User
+from django.views.generic import DetailView
+from .models import User, UserProfile
 from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
 from django.db import IntegrityError
@@ -59,6 +60,10 @@ class RegisterView(View):
             return render(request, 'main/register.html', {'message': 'Username already taken!'})
         login(request, user)
         return HttpResponseRedirect(reverse('main:index'))
+
+class ProfileView(DetailView):
+    model = UserProfile
+    
 
 def check_username(request, *args, **kwargs):
     username = request.POST.get('username')
