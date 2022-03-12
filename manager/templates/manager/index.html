@@ -1,18 +1,15 @@
 {% extends 'main/layout.html' %}
 
 {% block body %}
-<h1>Manager Homepage {{user.owner.first_name}} {{user.owner.last_name}}</h1>
-
-{% if hotels %}
-    <ul>
+    <div class="d-flex flex-row justify-content-center my-3">
+        <div class="p-2"><h1>Manager Homepage {{user.owner.first_name}} {{user.owner.last_name}}</h1></div>
+    </div>
+    <div class="d-flex flex-row justify-content-center">
+    {% if hotels %}
         {% for hotel in hotels %}
-            <li><a href="{% url 'manager:hotel_manager' hotel.id %}">{{hotel.name}}</a></li>
-        {% endfor %}
-    </ul>
-    
-{% else %}
-    You havent registered any hotels. <a href="{% url 'manager:create_hotel' %}">Register hotel</a>
-{% endif %}
-
-
+            <div class="p-2"><a href="{% url 'manager:hotel_manager' hotel.id %}" class="btn btn-primary btn-lg">{{hotel.name}}</a></div>  
+        {% endfor %}        
+    {% else %}
+        You havent registered any hotels. <a href="{% url 'manager:create_hotel' %}">Register hotel</a>
+    {% endif %}
 {% endblock %}
