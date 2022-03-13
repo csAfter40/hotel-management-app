@@ -9,6 +9,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
 from django.db import IntegrityError
 from .forms import UserProfileForm
+from .mixins import UserOwnershipMixin
 
 # Create your views here.
 def index(request):
@@ -28,6 +29,9 @@ class LoginView(View):
         if user is not None:
             if user.is_active:
                 login(request, user)
+                next = request.POST.get('next', None)
+                if next:
+                    return HttpResponseRedirect(next)
                 # if user is an owner, redirect to manager homepage
                 if hasattr(user, 'owner'):
                     return HttpResponseRedirect(reverse('manager:index'))
@@ -63,7 +67,7 @@ class RegisterView(View):
         login(request, user)
         return HttpResponseRedirect(reverse('main:index'))
 
-class EditProfileView(UpdateView):
+class EditProfileView(UserOwnershipMixin, UpdateView):
     model = UserProfile
     form_class = UserProfileForm
     success_url = "/"
