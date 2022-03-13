@@ -3,10 +3,12 @@ from django.http.response import HttpResponse
 from django.shortcuts import render
 from django.views import View
 from django.views.generic import DetailView
+from django.views.generic.edit import UpdateView
 from .models import User, UserProfile
 from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
 from django.db import IntegrityError
+from .forms import UserProfileForm
 
 # Create your views here.
 def index(request):
@@ -61,8 +63,16 @@ class RegisterView(View):
         login(request, user)
         return HttpResponseRedirect(reverse('main:index'))
 
-class ProfileView(DetailView):
+class EditProfileView(UpdateView):
     model = UserProfile
+    form_class = UserProfileForm
+    success_url = "/"
+    template_name = 'main/edit_profile.html'
+
+    def get_object(self, queryset=None):
+        pk = self.kwargs.get(self.pk_url_kwarg)
+        object = UserProfile.objects.get(user__id=pk)
+        return object
     
 
 def check_username(request, *args, **kwargs):

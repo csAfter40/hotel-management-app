@@ -9,7 +9,7 @@ urlpatterns = [
     path('login', views.LoginView.as_view(), name='login'),
     path('logout', views.LogoutView.as_view(), name='logout'),
     path('register', views.RegisterView.as_view(), name='register'),
-    path('profile/<pk>', views.ProfileView.as_view(), name='profile'),
+    path('profile/<pk>/edit', views.EditProfileView.as_view(), name='edit_profile'),
 ]
 
 htmx_urlpatterns = [
