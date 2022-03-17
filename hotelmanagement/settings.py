@@ -26,13 +26,9 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY')
-# SECRET_KEY = '^6-_%^g1i(k2h$q3daafr=q99i*#^lq=w*30ndy%sc@iv^3tj%'
-# SECRET_KEY='django-insecure-25o29c=c+my%&m0jrbzu#)d$h%lji)9%8p&d*ut+=ax3r2@mxi'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('debug') == 'True'
 
 ALLOWED_HOSTS = []
 
@@ -148,7 +144,7 @@ LOGIN_URL = 'main:login'
 
 INTERNAL_IPS = ["127.0.0.1"]
 DEBUG_TOOLBAR_CONFIG = {
-    'SHOW_TOOLBAR_CALLBACK': lambda r: False,  # disables debug toolbar
+    'SHOW_TOOLBAR_CALLBACK': lambda r: env('debug_toolbar') == 'True', # shows debug toolbar if true
     # '...
 }
 
