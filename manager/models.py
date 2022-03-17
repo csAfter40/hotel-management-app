@@ -14,7 +14,7 @@ class Owner(models.Model):
         ('P', 'passport'),
     ]
 
-    user = models.OneToOneField('main.User', on_delete=models.CASCADE)
+    user = models.OneToOneField('main.User', on_delete=models.CASCADE, related_name='owner')
     first_name = models.CharField(max_length=32)
     last_name = models.CharField(max_length=32)
     gender = models.CharField(max_length=1, choices=gender_choices)

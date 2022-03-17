@@ -14,7 +14,7 @@ from .mixins import UserOwnershipMixin
 # Create your views here.
 def index(request):
     context = {
-        'message': 'Hello world!'
+        
     }
     return render(request, 'main/index.html', context)
 

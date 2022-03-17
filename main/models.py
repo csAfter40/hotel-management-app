@@ -1,14 +1,25 @@
 from django.db import models
 from django.db.models.signals import post_save
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, UserManager
 from phonenumber_field.modelfields import PhoneNumberField
 from django.dispatch import receiver
+from manager.models import Owner
 
 def upload_to(instance, filename):
     return f'profile_pictures/{instance.user.id}/{filename}'
 
+class CustomUserManager(UserManager):
+    """
+        Reduces sql queries made while rendering navigation bar items.
+    """
+    def get(self, *args, **kwargs):
+        return super().select_related('userprofile', 'owner').get(*args, **kwargs)
+
+
 class User(AbstractUser):
     
+    objects = CustomUserManager()
+
     def is_owner(self):
         return hasattr(self, 'owner')
 
