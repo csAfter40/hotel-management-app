@@ -200,23 +200,13 @@ class ObjectMoveView(HotelOwnerMixin, View):
 
 class RoomTypesView(HotelOwnerMixin, View):
     form_class = CreateRoomTypeForm
-
-    def setup(self, request, *args, **kwargs):
-        """Initialize attributes shared by all view methods."""
-        if hasattr(self, 'get') and not hasattr(self, 'head'):
-            self.head = self.get
-        self.request = request
-        self.args = args
-        self.kwargs = kwargs
-        hotel_id = kwargs['hotel_id']
-        self.hotel = Hotel.objects.get(id=hotel_id)
+        
+    def get(self, request, *args, **kwargs):
         self.room_type_form = CreateRoomTypeForm()
         self.bed_form = BedForm()
         self.room_bed_form = RoomBedForm()
-        
-    def get(self, request, *args, **kwargs):
         beds = Bed.objects.filter(is_general=True).filter(hotel=self.hotel)
-        room_types = RoomType.objects.filter(hotel=self.hotel)
+        room_types = RoomType.objects.filter(hotel=self.hotel).prefetch_related('room_beds__bed')
         context = {
             'create': True,
             'hotel': self.hotel,
@@ -242,7 +232,7 @@ class RoomTypesView(HotelOwnerMixin, View):
             room_type.hotel = self.hotel
             room_type.save()
             self.create_room_beds(bed_info, room_type)
-        return self.get(request)
+        return HttpResponseRedirect(reverse('manager:room_types', kwargs={'hotel_id': self.hotel.id}))
 
 
 class RoomTypesEditView(HotelOwnerMixin, UpdateView):
