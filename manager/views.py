@@ -74,16 +74,6 @@ class FloorManagerView(HotelOwnerMixin, CreateView):
 
     form_class = CreateFloorForm
     
-    def setup(self, request, *args, **kwargs):
-        """Initialize attributes shared by all view methods."""
-        if hasattr(self, 'get') and not hasattr(self, 'head'):
-            self.head = self.get
-        self.request = request
-        self.args = args
-        self.kwargs = kwargs
-        id = kwargs['hotel_id']
-        self.hotel = Hotel.objects.get(id=id)
-
     def get(self, request, *args, **kwargs):
         floors = Floor.objects.get_sorted(hotel=self.hotel)
         context = {
