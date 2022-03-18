@@ -64,10 +64,8 @@ class IndexView(LoginRequiredMixin, IsManagerMixin, View):
 
 class HotelManagerView(HotelOwnerMixin, View):
     def get(self, request, *args, **kwargs):
-        id = self.kwargs['hotel_id']
-        hotel = Hotel.objects.get(id=id)
         context = {
-            'hotel': hotel,
+            'hotel': self.hotel,
         }
         return render(self.request, 'manager/hotel_manager.html', context)
 

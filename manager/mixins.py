@@ -34,8 +34,9 @@ class HotelOwnerMixin(AccessMixin):
         if not hasattr(request.user, 'owner'):
             return HttpResponseRedirect(reverse('main:index'))
         id = kwargs['hotel_id']
-        hotel = Hotel.objects.get(id=id)
-        if not hotel in request.user.owner.hotel_set.all():
+        hotel = Hotel.objects.prefetch_related('owners').get(id=id)
+        if not hasattr(self, 'hotel'):
+            self.hotel = hotel
+        if not request.user.owner in hotel.owners.all():
             raise PermissionDenied
-        
         return super().dispatch(request, *args, **kwargs)
