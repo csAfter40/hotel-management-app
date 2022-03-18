@@ -96,28 +96,20 @@ class FloorEditView(HotelOwnerMixin, UpdateView):
 
     model = Floor
     form_class = CreateFloorForm
-    
-    
-    def setup(self, request, *args, **kwargs):
-        """Initialize attributes shared by all view methods."""
-        if hasattr(self, 'get') and not hasattr(self, 'head'):
-            self.head = self.get
-        self.request = request
-        self.args = args
-        self.kwargs = kwargs
-        pk = kwargs['pk']
-        self.floor = Floor.objects.get(id=pk)
-        self.hotel = self.floor.hotel
+
+    def form_valid(self, form):
         self.success_url = reverse_lazy('manager:floor_manager', kwargs={'hotel_id':self.hotel.id})
+        return super().form_valid(form)
 
     def get(self, request, *args, **kwargs):
         floors = Floor.objects.get_sorted(hotel=self.hotel)
+        floor = floors.get(id=self.kwargs['pk'])
 
         context = {
-            'floor': self.floor,
+            'floor': floor,
             'create': False,
             'hotel': self.hotel,
-            'create_floor_form': self.form_class(instance=self.floor),
+            'create_floor_form': self.form_class(instance=floor),
             'floors': floors
         }
         return render(self.request, 'manager/floor_manager.html', context)
