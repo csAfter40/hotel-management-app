@@ -9,6 +9,8 @@ In this project I have experienced:
     * using htmx for ajax,
     * creating a custom model manager,
     * using signals
+    * managing media files
+    * increasing performance with select_related and prefetch_related()
     so far...
 
 Project specifications:
