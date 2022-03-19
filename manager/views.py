@@ -239,36 +239,24 @@ class RoomTypesEditView(HotelOwnerMixin, UpdateView):
 
     model = RoomType
     form_class = CreateRoomTypeForm
-    
-    
+        
     def setup(self, request, *args, **kwargs):
         """Initialize attributes shared by all view methods."""
-        if hasattr(self, 'get') and not hasattr(self, 'head'):
-            self.head = self.get
-        self.request = request
-        self.args = args
-        self.kwargs = kwargs
-        pk = kwargs['pk']
-        self.room_type = RoomType.objects.get(id=pk)
-        self.hotel = self.room_type.hotel
-        self.success_url = reverse_lazy('manager:room_types', kwargs={'hotel_id':self.hotel.id})
-        self.room_type_form = CreateRoomTypeForm
-        self.bed_form = BedForm()
-        self.room_bed_form = RoomBedForm()
+        super().setup(request, *args, **kwargs)
+        self.room_type = RoomType.objects.get(id=self.kwargs['pk'])
         self.room_beds = self.room_type.room_beds.all()
-        if request.method == 'POST':
-            self.bed_info = json.loads(request.POST['bed_info'])
+
 
     def get(self, request, *args, **kwargs):
         beds = Bed.objects.filter(is_general=True).filter(hotel=self.hotel)
-        room_types = RoomType.objects.filter(hotel=self.hotel)
+        room_types = RoomType.objects.filter(hotel=self.hotel).prefetch_related('room_beds__bed')
         context = {
             'create': False,
             'hotel': self.hotel,
-            'room_type_form': self.room_type_form(instance=self.room_type),
+            'room_type_form': CreateRoomTypeForm(instance=self.room_type),
             'room_type': self.room_type,
-            'bed_form': self.bed_form,
-            'room_bed_form': self.room_bed_form,
+            'bed_form': BedForm(),
+            'room_bed_form': RoomBedForm(),
             'room_types': room_types,
             'beds': beds,
             'room_beds': self.room_beds,
@@ -278,6 +266,7 @@ class RoomTypesEditView(HotelOwnerMixin, UpdateView):
     def update_room_beds(self):
         # remove deleted room beds
         delete_list = []
+        self.bed_info = json.loads(self.request.POST['bed_info'])
         for room_bed in self.room_beds:
             if str(room_bed.bed.id) not in list(self.bed_info.keys()):
                 delete_list.append(room_bed.id)
@@ -298,6 +287,7 @@ class RoomTypesEditView(HotelOwnerMixin, UpdateView):
     
     def form_valid(self, form):
         """If the form is valid, save the associated model."""
+        self.success_url = reverse_lazy('manager:room_types', kwargs={'hotel_id':self.hotel.id})
         self.update_room_beds()
         self.object = form.save()
         return super().form_valid(form)
