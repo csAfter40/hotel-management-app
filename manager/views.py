@@ -299,25 +299,20 @@ class RoomManagerView(HotelOwnerMixin, CreateView):
     template_name = 'manager/room_manager.html'
     
     def setup(self, request, *args, **kwargs):
-        hotel_id = kwargs['hotel_id']
         # if there is pk in the url than it is an update page, otherwise it is a create page.
         pk = kwargs.get('pk', False)
         self.create = not bool(pk)
-        self.hotel = Hotel.objects.get(id=hotel_id)
-        self.batch_form = CreateRoomForm(hotel=self.hotel)
         self.message = None
         self.batch_message = None
-        self.success_url = reverse('manager:room_manager', args=[hotel_id])
         return super().setup(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        floors = Floor.objects.filter(hotel=self.hotel)
+        floors = Floor.objects.filter(hotel=self.hotel).prefetch_related('rooms__room_type')
         extra_context = {
             'hotel': self.hotel,
             'floors': floors,
             'create': self.create,
-            # 'batch_form': self.batch_form_class(**self.get_form_kwargs()),
-            'batch_form': self.batch_form,
+            'batch_form': CreateRoomForm(hotel=self.hotel),
             'message': self.message,
             'batch_message': self.batch_message,
         }
@@ -336,6 +331,7 @@ class RoomManagerView(HotelOwnerMixin, CreateView):
         return kwargs
 
     def form_valid(self, form):
+        self.success_url = reverse('manager:room_manager', args=[self.hotel.id])
         if self.create:
             data = form.cleaned_data
             floor = data['floor']
@@ -385,20 +381,17 @@ class RoomEditView(HotelOwnerMixin, UpdateView):
     model = Room
     form_class = CreateRoomForm
     template_name = 'manager/room_manager.html'
-    
-    def setup(self, request, *args, **kwargs):
-        hotel_id = kwargs['hotel_id']
-        self.hotel = Hotel.objects.get(id=hotel_id)
-        self.success_url = reverse('manager:room_manager', args=[hotel_id])
-        return super().setup(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        floors = Floor.objects.filter(hotel=self.hotel)
+        floors = Floor.objects.filter(hotel=self.hotel).prefetch_related('rooms__room_type')
         extra_context = {
             'hotel': self.hotel,
             'floors': floors,
         }
         return super().get_context_data(**extra_context)
+
+    def get_success_url(self):
+        return reverse('manager:room_manager', args=[self.hotel.id])
 
 
 class EmployeeManagerView(HotelOwnerMixin, CreateView):
