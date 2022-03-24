@@ -6,8 +6,8 @@ const formType = document.querySelector('#form-type');
 console.log(formType.value)
 
 if (formType.value == 'update') {
-    console.log('update')
-    userField.disabled = true;
+    console.log('update');
+    userField.setAttribute('readonly', true);
 };
 if (form) {
     form.addEventListener('submit', (event) => {
