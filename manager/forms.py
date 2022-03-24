@@ -128,7 +128,7 @@ class CreateEmployeeForm(forms.ModelForm):
 
     def __init__(self, hotel, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['user'].queryset = HotelUser.objects.filter(hotel=hotel)
+        self.fields['user'].queryset = HotelUser.objects.filter(hotel=hotel).select_related('user')
 
     class Meta:
         model = Employee

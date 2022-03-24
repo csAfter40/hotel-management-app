@@ -395,15 +395,8 @@ class RoomEditView(HotelOwnerMixin, UpdateView):
 
 
 class EmployeeManagerView(HotelOwnerMixin, CreateView):
-    # model = Employee
     form_class = CreateEmployeeForm
     template_name = 'manager/employee_manager.html'
-    
-    def setup(self, request, *args, **kwargs):
-        hotel_id = kwargs['hotel_id']
-        self.hotel = Hotel.objects.get(id=hotel_id)
-        self.success_url = reverse('manager:employee_manager', kwargs={'hotel_id':hotel_id})
-        return super().setup(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         employees = Employee.objects.filter(user__hotel=self.hotel)
@@ -421,6 +414,9 @@ class EmployeeManagerView(HotelOwnerMixin, CreateView):
         kwargs.update({'hotel':self.hotel})
         return kwargs
 
+    def form_valid(self, form):
+        self.success_url = reverse('manager:employee_manager', kwargs={'hotel_id':self.hotel.id})
+        return super().form_valid(form)
 
 class EmployeeEditView(HotelOwnerMixin, UpdateView):
     form_class = CreateEmployeeForm
