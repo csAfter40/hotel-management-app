@@ -25,7 +25,7 @@ class HotelCreateForm(forms.ModelForm):
 
     class Meta:
         model = Hotel
-        exclude = ['owner']
+        exclude = ['owners']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'country': forms.Select(attrs={'class': 'form-control'}),
