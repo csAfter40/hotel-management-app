@@ -40,7 +40,7 @@
                     {{hotel.name}}
                   </a>
                   <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                    <a class="dropdown-item" href="{% url 'manager:edit_hotel' hotel.id %}">Hotel Profile</a>
+                    <a class="dropdown-item" href="{% url 'manager:hotel_edit' hotel.id %}">Hotel Profile</a>
                     <a class="dropdown-item" href="{% url 'manager:hotel_manager' hotel.id %}">Manager Home</a>
                   </div>
                 </li>

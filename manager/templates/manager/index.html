@@ -12,4 +12,6 @@
     {% else %}
         You havent registered any hotels. <a href="{% url 'manager:create_hotel' %}">Register hotel</a>
     {% endif %}
+    </div>
+    <div class="d-flex flex-row justify-content-center my-3"><a href="{% url 'manager:create_hotel' %}" class="btn btn-lg btn-danger">Register new hotel</a></div>
 {% endblock %}

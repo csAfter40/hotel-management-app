@@ -49,6 +49,13 @@ class HotelCreate(LoginRequiredMixin, IsManagerMixin, CreateView):
         hotel.owners.add(owner)
         return super(HotelCreate, self).form_valid(form)
 
+class HotelEditView(LoginRequiredMixin, IsManagerMixin, UpdateView):
+    model = Hotel
+    form_class = HotelCreateForm
+    template_name = 'manager/edit_hotel.html'
+    success_url = reverse_lazy('manager:index')
+
+
 
 class IndexView(LoginRequiredMixin, IsManagerMixin, View):
 
